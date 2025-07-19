@@ -1,0 +1,275 @@
+🌍 CORE CONCEPT starfleet
+3D planet model with realistic textures and slow rotation
+
+Products orbit as aircraft/spaceships around planet in two layers
+
+Starry space background with twinkling effects
+
+Simple "Launch Your Ship" button as main CTA
+
+Modal-based product submission system to showcase creator projects
+
+🎯 USER FLOW
+1. Landing Experience
+Beautiful 3D alien planet scene loads immediately
+
+Existing aircraft/spaceships orbit smoothly in two layers around planet
+
+Starfield background with subtle animations
+
+Single prominent "Launch Your Ship" button
+
+Recent Launches panel in right corner (collapsible)
+
+Minimal UI — let the 3D scene be the hero
+
+2. Product Submission (via Modal)
+Clicking "Launch Your Ship" opens submission modal
+
+Flow:
+
+Click "Launch"
+
+Choose vehicle type:
+• FREE: Airplane or Airship (lower orbit)
+• PAID ($5): Spaceships (higher orbit) 
+
+Fill form (see Vehicle Deep Dive Schema below)
+
+Pay (if spaceship type selected)
+
+Watch launch animation, vehicle added to appropriate orbit layer + Recent Launches
+
+📦 Vehicle Deep Dive Modal — Form Schema
+This modal is the creator's orbital profile, shown when a vehicle is clicked:
+
+🔹 CREATOR INFO
+
+🌠 Creator Handle or Name
+e.g. @yash.k or Yash Kumar
+
+🛰️ Tagline (optional)
+One-liner used for hover states (max 60 chars)
+
+🧪 What are you building or creating?
+Short pitch: 100–250 characters
+Example: “Building an AI journaling app that helps Gen Z reflect better.”
+
+🧑‍🚀 Your Role(s) (multi-select)
+
+Solo Founder
+
+Developer
+
+Designer
+
+Creator
+
+Artist
+
+Explorer
+
+Builder
+
+Other (custom input)
+
+🔗 LINKS & SOCIALS (optional)
+
+📸 Instagram Post
+
+📺 YouTube Demo
+
+🐦 X Thread
+
+🌐 Website / Live App
+
+🧑‍🤝‍🧑 Discord / Community Invite
+
+3. Vehicle Interaction
+Hover → shows tooltip with name + tagline
+
+Click → opens full Vehicle Modal (see above schema)
+
+Modal highlights links, description, roles, visuals
+
+Smooth camera pan to focused vehicle
+
+Share button to copy direct link to that vehicle
+
+4. Recent Launches Panel
+Fixed right-side panel, collapsible
+
+Shows 10–20 latest launches
+
+Includes:
+
+Satellite name
+
+Launch time
+
+Type (e.g. CubeSat, Station)
+
+Click to zoom to satellite
+
+New satellites pulse subtly
+
+🛰️ VEHICLE TYPES & PRICING
+
+**FREE AIRCRAFT (Lower Orbit - Atmospheric Layer)**
+• Airplane – FREE
+• Airship – FREE
+
+**PAID SPACESHIPS (Higher Orbit - Space Layer)**
+• Air Police High Speed – $5
+• Colored Freighter – $5  
+• Flying Saucer – $5
+• X-Wing Starfighter – $5
+• Spaceship 1-5 (various designs) – $5 each
+
+Each type includes different visual designs and altitude tiers. Free aircraft fly in atmospheric layer, paid spaceships orbit in space.
+
+💫 VISUAL FEATURES
+High-quality alien planet (day/night cycle, cloud layers)
+
+Orbiting aircraft/spaceships with realistic movement in two layers
+
+Starfield background with twinkling effects
+
+Sunlight lighting and space ambiance
+
+Smooth camera + transitions at 60fps
+
+🎮 INTERACTIONS
+Mouse drag: Orbit camera
+
+Scroll: Zoom in/out
+
+Hover: Tooltip
+
+Click: Full vehicle profile modal
+
+Idle: Planet rotates slowly
+
+Real-time feed on right updates instantly
+
+📱 RESPONSIVE DESIGN
+Touch controls on mobile
+
+Modals adapt to small screens
+
+Reduced graphics on low-end devices for performance
+
+🔧 TECHNICAL REQUIREMENTS
+60fps target performance
+
+Graceful fallback for unsupported browsers
+
+Server-side rendering for SEO
+
+Accessibility with keyboard navigation
+
+🚀 LAUNCH ANIMATION
+Rocket launches from Earth → satellite deploys
+
+Particle trails for rocket
+
+Toast notification confirms deployment
+
+Satellite joins orbit instantly
+
+💾 DATA MANAGEMENT
+Uses API for form submission + satellite data
+
+Real-time updates via WebSocket
+
+No localStorage, all ephemeral
+
+Caching of 3D assets for faster performance
+
+🎨 UI/UX PRINCIPLES
+Glassmorphism & neon accents
+
+Minimal UI; immersive 3D world is focus
+
+Responsive, elegant transitions
+
+Loading skeletons & orbiting visual polish
+
+🔒 SECURITY & VALIDATION
+Input validation and sanitization
+
+Rate limiting to avoid spam
+
+Basic profanity filtering
+
+HTTPS only (production)
+
+📊 ANALYTICS INTEGRATION
+Track interactions: hover, click, launch
+
+Time spent per satellite or session
+
+Conversion rate from view → launch
+
+Leaderboard clicks and engagement
+
+🎪 GAMIFICATION ELEMENTS
+Orbit levels (altitude tiers)
+
+Achievement badges per launch
+
+Trending satellites leaderboard
+
+Shareable links & social thumbnails
+
+🌟 PREMIUM FEATURES
+Custom animated satellites
+
+Brand texture upload
+
+Orbital trails and dynamic glow
+
+Spotlight for featured creators
+
+🔄 REAL-TIME FEATURES
+New satellites appear instantly
+
+Auto-scrolling launch feed
+
+Active user counter
+
+Live notification toast
+
+“Trending” tag for most viewed
+
+📈 SCALABILITY CONSIDERATIONS
+Satellite grouping by altitude
+
+Frustum culling & LOD management
+
+Optimized rendering with mesh batching
+
+Expandable orbit layers
+
+🎯 SUCCESS METRICS
+Launch conversion rate
+
+Average time per session
+
+Return user ratio
+
+Satellite click-through stats
+
+Social shares per satellite
+
+🚀 UPDATE: TWO-TIER VEHICLE SYSTEM
+
+**FREE AIRCRAFT:**
+• 2 airplane models (airplane + airship)
+• Lower orbit (atmospheric layer)
+• No payment required
+
+**PAID SPACESHIPS ($5):**
+• 9 spaceship models available
+• Higher orbit (space layer)
+• Each spaceship shows creator's pilot profile modal 

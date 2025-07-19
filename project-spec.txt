@@ -1,0 +1,114 @@
+# Starfleet – Project Specification (snapshot)
+
+Last updated: <DATE_PLACEHOLDER>
+
+──────────────────────────────────
+1. CORE IDEA
+• Web-based 3-D experience: a vibrant alien-looking planet floating in space, rendered with Three.js.
+• Users can pay $5 to launch a personalised spaceship that orbits the planet forever.
+• Each spaceship represents a creator’s product/profile and is visible to all visitors in real time.
+
+2. TECH STACK
+Frontend  : Next.js 14 (App Router) + React 18 + TypeScript (strict)
+3-D      : Three.js r158+ with @react-three/fiber & drei helpers
+Styling   : Tailwind CSS 3 + Shadcn UI / Radix primitives
+State     : Zustand (client) – minimal; rely on React Server Components elsewhere
+Backend   : Supabase (PostgreSQL, Realtime, Auth)
+Payments  : Dodo Payments API ($5 fixed price)
+Deploy    : Vercel (edge functions, CDN)
+
+3. 3-D ASSETS (./public/models/)
+
+**FREE AIRCRAFT (Lower Orbit)**
+| id          | file name (GLB)    | size | price |
+| ----------- | ------------------ | ---- | ----- |
+| airplane    | airplane.glb       | TBD  | FREE  |
+| airship     | airship.glb        | TBD  | FREE  |
+
+**PAID SPACESHIPS (Higher Orbit)**
+| id                | file name (GLB)                 | size   | price |
+| ----------------- | -------------------------------- | ------ | ----- |
+| air-police        | Air Police – High Speed.glb      | ~9.5 MB | $5   |
+| colored-freighter | Colored Freighter.glb            | ~2.9 MB | $5   |
+| flying-saucer     | Flying saucer.glb                | ~0.35 MB| $5   |
+| x-wing            | T-65 X-Wing Starfighter.glb       | ~0.30 MB| $5   |
+| ship-4            | Spaceship 4.glb                  | ~0.18 MB| $5   |
+| ship-3            | Spaceship 3.glb                  | ~0.10 MB| $5   |
+| ship-2            | Spaceship 2.glb                  | ~0.16 MB| $5   |
+| ship-1            | Spaceship.glb (low-poly)         | ~0.02 MB| $5   |
+| ship-5            | spaceship 5.glb                  | ~0.34 MB| $5   |
+
+**Pricing Model:** Free aircraft orbit in lower atmosphere, paid spaceships orbit in higher space. Large models will be Draco-compressed before commit to stay under bundle budgets.
+
+4. DATABASE (Supabase)
+products table → renamed logical concept “ships”.
+```
+  id uuid PK
+  user_id uuid → auth.users
+  website_url varchar(255) NOT NULL
+  name varchar(100) NOT NULL
+  tagline varchar(60)
+  description text
+  icon_url varchar(255)
+  screenshot_url varchar(255)
+  spaceship_id varchar(50) NOT NULL  -- references asset list above
+  orbit_radius integer               -- scene units
+  inclination real                   -- radians
+  phase real                         -- radians (0-2π)
+  angular_speed real                 -- rad·s⁻¹
+  price integer NOT NULL DEFAULT 0  -- 0 for free aircraft, 5 for spaceships
+  created_at timestamp
+```
+payments table: `amount` is 0 for free aircraft, 5 for paid spaceships. Free launches skip payment flow entirely.
+
+5. USER FLOW (CLIENT)
+1. Landing page shows planet, starry sky, ships orbiting (instanced).
+2. Click “Add your ship” CTA.
+3. Modal Step 1 – enter product details & optional images (validated with Zod).
+4. Modal Step 2 – choose vehicle type:
+   **FREE AIRCRAFT (Lower Orbit):** Airplane or Airship models (No payment required)
+   **PAID SPACESHIPS (Higher Orbit - $5):** 9 spaceship models to choose from
+5. Launch Flow:
+   **For Free Aircraft:** Direct launch → creates `products` row with price=0, broadcasts via Supabase Realtime
+   **For Paid Spaceships:** Call `/api/create-payment-link` → user pays → webhook verifies → creates records
+6. Front-end listens on `ships_updates`; when insert arrives:
+   • For launching user: play rocket→ship animation.
+   • For everyone else: fade new ship into appropriate orbit layer (lower for aircraft, higher for spaceships).
+7. Ships are interactive: hover tooltip (name + tagline), click opens full profile modal, share permalink `/ship/<id>`.
+
+6. ORBIT MECHANICS
+```
+const θ = phase + angularSpeed * elapsedTime;
+const xʹ = orbitRadius * cos(θ);
+const yʹ = orbitRadius * sin(θ);
+// rotate plane by inclination about X-axis
+pos.set(xʹ, yʹ * cos(inclination), yʹ * sin(inclination));
+```
+
+**Orbit Layers:**
+• **Free Aircraft:** Lower orbit (radius: 4-5 planet units) - atmospheric layer
+• **Paid Spaceships:** Higher orbit (radius: 6-8 planet units) - space layer
+• Ships are rendered with one InstancedMesh per GLB type.
+• Depth-buffering ensures ships disappear behind the planet and re-emerge realistically.
+
+7. 3-D ENVIRONMENT
+✔ Gradient space background (purple → indigo) as in `planetbackground.html`.
+✔ Custom additive-blended star shader (colourful points).
+✔ Alien planet texture (canvas-generated) + atmosphere shader.
+✔ Optional rings & multilayer clouds.
+✖ No on-screen instructional text from the demo.
+
+8. PERFORMANCE TARGETS
+• < 100 KB gzipped JS initial load.
+• 60 fps (desktop & recent mobile) with >100 ships via instancing.
+• All textures KTX2 compressed, models Draco + meshOptimizer.
+
+9. OUTSTANDING TODOs
+□ Compress large GLBs.
+□ Build `lib/data/spaceships.ts` mapping.
+□ Implement `/api/create-payment-link` & webhook.
+□ Create RSC planet page with `<SpaceEnvironment>`, `<PlanetSystem>`, and `<ShipsInstancedMesh>` components.
+□ Add Playwright E2E test: launch flow end-to-end in test mode.
+
+──────────────────────────────────
+# End of spec 
