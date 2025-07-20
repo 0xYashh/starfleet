@@ -24,7 +24,7 @@ export default function Home() {
       
       {/* Top UI */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-start p-4 pointer-events-none">
-        {/* Left Side: Branding and Recent Deploys */}
+        {/* Left Side: Branding, Deploys, and Hangar */}
         <div className="flex flex-col items-start gap-4 pointer-events-auto">
           <div className="flex items-center gap-3">
             <Image src="/icon/starfleet.svg" alt="Starfleet Logo" width={40} height={40} />
@@ -37,6 +37,15 @@ export default function Home() {
           >
             Recent Deploys
           </CartoonButton>
+          {user && (
+            <CartoonButton
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowHangar(true)}
+            >
+              Hangar
+            </CartoonButton>
+          )}
         </div>
         
         {/* Right Side: Auth */}
@@ -58,29 +67,15 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Bottom UI */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md z-40 pointer-events-none px-4
-                      flex justify-center items-center gap-4">
-        <div className="flex-grow flex justify-center pointer-events-auto">
-          <CartoonButton
-            variant="primary"
-            size="lg"
-            onClick={() => (user ? setShowWizard(true) : setShowSignIn(true))}
-          >
-            🚀 Deploy Spaceship
-          </CartoonButton>
-        </div>
-        {user && (
-          <div className="absolute right-4 pointer-events-auto">
-             <CartoonButton
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowHangar(true)}
-            >
-              Hangar
-            </CartoonButton>
-          </div>
-        )}
+      {/* Bottom UI - Simplified for a single centered button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+        <CartoonButton
+          variant="primary"
+          size="lg"
+          onClick={() => (user ? setShowWizard(true) : setShowSignIn(true))}
+        >
+          🚀 Deploy Spaceship
+        </CartoonButton>
       </div>
 
       {/* Modals */}

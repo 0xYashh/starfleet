@@ -10,12 +10,12 @@ export interface VehicleAsset {
 
 export const VEHICLES: Record<string, VehicleAsset> = {
   // FREE AIRCRAFT (Lower Orbit - Atmospheric Layer)
-  "airplane": {
-    id: "airplane",
-    label: "Airplane",
+  "jet": {
+    id: "jet",
+    label: "Jet",
     price: 0,
-    remoteUrl:"https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LyKKqQFHMkTY6oMdO7jW31KzhClbiV5ga9np2", // TODO: Replace with actual UploadThing URL
-    localPath: "/models/Airplane 1.glb",
+    remoteUrl:"https://fq45fpomsg.ufs.sh/f/dTANuJjEj28L5YrvvX4gcP1MLvUNE7nCdkS3TXVH0DOJhj9m", // TODO: Replace with actual UploadThing URL
+    localPath: "/models/jet.glb",
     radius: 4,
     category: 'aircraft'
   },
@@ -47,12 +47,12 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     radius: 7.2,
     category: 'spaceship'
   },
-  "flying-saucer": {
-    id: "flying-saucer",
-    label: "Flying Saucer",
+  "x-wing-2": {
+    id: "x-wing-2",
+    label: "x-wing II",
     price: 5,
-    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LOQHex8LEbPjdm1hcrl8ZRKW7CSftXYykoVpu", // TODO: Replace with actual UploadThing URL
-    localPath: "/models/Flying saucer.glb",
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LA1Zh8X36qu5HJNAtLzI7XQiKFcy8lj2avWmo", // TODO: Replace with actual UploadThing URL
+    localPath: "/models/x-wing.glb",
     radius: 6.5,
     category: 'spaceship'
   },
@@ -67,7 +67,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
   },
   "ship-1": {
     id: "ship-1",
-    label: "Spaceship (Low-poly)",
+    label: "Stardust Cruiser",
     price: 5,
     remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28L3DVId49nHP4bXojdt3ZFslnSkT07OVQW6Ugr", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship.glb",
@@ -76,8 +76,9 @@ export const VEHICLES: Record<string, VehicleAsset> = {
   },
   "ship-2": {
     id: "ship-2",
-    label: "Spaceship 2",
+    label: "Nova Voyager",
     price: 5,
+    // Corrected the duplicated URL to point to the correct model
     remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LMHWYMtF7xSFh8PNIwJik1g69ZLRvnCestXzY", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 2.glb",
     radius: 6.4,
@@ -85,7 +86,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
   },
   "ship-3": {
     id: "ship-3",
-    label: "Spaceship 3",
+    label: "Galactic Drifter",
     price: 5,
     remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LF5COeOKhYN4IEuAKQ5DSGUxgBP7T9bspeOFt", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 3.glb",
@@ -94,16 +95,16 @@ export const VEHICLES: Record<string, VehicleAsset> = {
   },
   "ship-4": {
     id: "ship-4",
-    label: "Spaceship 4",
+    label: "Orion Scout",
     price: 5,
-    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LMHWYMtF7xSFh8PNIwJik1g69ZLRvnCestXzY", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LjAliuTkb0IJTkFvWhHX7Px68OYa5NdneAVKy", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 4.glb",
     radius: 6.8,
     category: 'spaceship'
   },
   "ship-5": {
     id: "ship-5",
-    label: "Spaceship 5",
+    label: "Astro Hopper",
     price: 5,
     remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LnGCpd8zQcTJN5WH6GwqortR1IE48sXU3izdZ", // TODO: Replace with actual UploadThing URL
     localPath: "/models/spaceship 5.glb",

@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Ship } from '@/lib/types/ship';
+import { cn } from '@/lib/utils';
 
 interface RecentDeploysModalProps {
   open: boolean;
@@ -47,14 +48,24 @@ export function RecentDeploysModal({ open, onOpenChange }: RecentDeploysModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="backdrop-blur-lg bg-white/10 border-white/20 max-w-lg w-full text-white">
+      <DialogContent
+        className={cn(
+          "backdrop-blur-lg bg-white/10 border-white/20 w-[88vw] sm:w-full text-white sm:max-w-xs",
+          // Remove default centering styles
+          "top-auto left-auto right-auto bottom-auto translate-x-0 translate-y-0",
+          // Mobile: top-centered popover
+          "fixed top-24 left-1/2 -translate-x-1/2",
+          // Desktop: positioned under the trigger button
+          "sm:absolute sm:left-4 sm:top-16 sm:-translate-x-0"
+        )}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Recent Deploys</DialogTitle>
           <DialogDescription>
             The latest ships to join the fleet.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-4">
+        <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-4 custom-scrollbar">
           {loading ? (
             <p>Loading recent activity...</p>
           ) : ships.length === 0 ? (

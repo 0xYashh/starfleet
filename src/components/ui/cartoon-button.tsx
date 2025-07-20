@@ -49,6 +49,8 @@ export const CartoonButton = forwardRef<HTMLButtonElement, CartoonButtonProps>(
           // Base styles from the provided CSS
           'relative box-border flex items-center justify-center',
           'font-semibold leading-6 text-center no-underline',
+          // Apply Poppins font to all buttons
+          '[font-family:var(--font-poppins)]',
           'cursor-pointer select-none outline-0',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           
@@ -63,7 +65,7 @@ export const CartoonButton = forwardRef<HTMLButtonElement, CartoonButtonProps>(
         {...props}
       >
         <span className={cn(
-          'flex items-center justify-center gap-2',
+          'flex items-center justify-center gap-2 whitespace-nowrap',
           isLoading && 'opacity-0'
         )}>
           {children}

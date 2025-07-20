@@ -51,7 +51,7 @@ export function HangarModal({ open, onOpenChange }: HangarModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="backdrop-blur-lg bg-white/10 border-white/20 max-w-lg w-full text-white">
+      <DialogContent className="backdrop-blur-lg bg-white/10 border-white/20 w-[88vw] sm:w-full sm:max-w-md text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Your Owned Spaceships!</DialogTitle>
           <DialogDescription>

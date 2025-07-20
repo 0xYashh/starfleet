@@ -36,7 +36,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="backdrop-blur-lg bg-white/10 border-white/20 max-w-md w-full text-white">
+      <DialogContent className="backdrop-blur-lg bg-white/10 border-white/20 w-[88vw] sm:w-full sm:max-w-sm text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Sign in</DialogTitle>
           <DialogDescription>
