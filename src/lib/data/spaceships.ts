@@ -14,7 +14,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "airplane",
     label: "Airplane",
     price: 0,
-    remoteUrl: "https://utfs.io/f/placeholder_airplane.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl:"https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LyKKqQFHMkTY6oMdO7jW31KzhClbiV5ga9np2", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Airplane 1.glb",
     radius: 4,
     category: 'aircraft'
@@ -23,18 +23,17 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "airship", 
     label: "Airship",
     price: 0,
-    remoteUrl: "https://utfs.io/f/placeholder_airship.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LLKJawTgZ9N4JvGE1AlHyQax8rqtkiOsgKoTP", // TODO: Replace with actual UploadThing URL
     localPath: "/models/airship.glb",
     radius: 4.5,
     category: 'aircraft'
   },
-
   // PAID SPACESHIPS (Higher Orbit - Space Layer)
   "air-police": {
     id: "air-police",
     label: "Air Police – High Speed",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_air-police.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl:"https://fq45fpomsg.ufs.sh/f/dTANuJjEj28L6abe3kuLrpQnYBGzqU8TAZaPEugtDcLyOxvw", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Air Police - High Speed.glb",
     radius: 7,
     category: 'spaceship'
@@ -43,7 +42,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "colored-freighter",
     label: "Colored Freighter",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_colored-freighter.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LPEFdGEyfsAkJFcXNHiEneUlMWtKZq204buvB", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Colored Freighter.glb",
     radius: 7.2,
     category: 'spaceship'
@@ -52,7 +51,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "flying-saucer",
     label: "Flying Saucer",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_flying-saucer.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LOQHex8LEbPjdm1hcrl8ZRKW7CSftXYykoVpu", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Flying saucer.glb",
     radius: 6.5,
     category: 'spaceship'
@@ -61,7 +60,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "x-wing",
     label: "T-65 X-Wing Starfighter",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_x-wing.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LY9t0DB6p2oF1aSPuXhAKQdscCkUW69GzDlER", // TODO: Replace with actual UploadThing URL
     localPath: "/models/T-65 X-Wing Starfighter.glb",
     radius: 6.8,
     category: 'spaceship'
@@ -70,7 +69,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "ship-1",
     label: "Spaceship (Low-poly)",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_ship-1.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28L3DVId49nHP4bXojdt3ZFslnSkT07OVQW6Ugr", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship.glb",
     radius: 6.2,
     category: 'spaceship'
@@ -79,7 +78,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "ship-2",
     label: "Spaceship 2",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_ship-2.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LMHWYMtF7xSFh8PNIwJik1g69ZLRvnCestXzY", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 2.glb",
     radius: 6.4,
     category: 'spaceship'
@@ -88,7 +87,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "ship-3",
     label: "Spaceship 3",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_ship-3.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LF5COeOKhYN4IEuAKQ5DSGUxgBP7T9bspeOFt", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 3.glb",
     radius: 6.6,
     category: 'spaceship'
@@ -97,7 +96,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "ship-4",
     label: "Spaceship 4",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_ship-4.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LMHWYMtF7xSFh8PNIwJik1g69ZLRvnCestXzY", // TODO: Replace with actual UploadThing URL
     localPath: "/models/Spaceship 4.glb",
     radius: 6.8,
     category: 'spaceship'
@@ -106,7 +105,7 @@ export const VEHICLES: Record<string, VehicleAsset> = {
     id: "ship-5",
     label: "Spaceship 5",
     price: 5,
-    remoteUrl: "https://utfs.io/f/placeholder_ship-5.glb", // TODO: Replace with actual UploadThing URL
+    remoteUrl: "https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LnGCpd8zQcTJN5WH6GwqortR1IE48sXU3izdZ", // TODO: Replace with actual UploadThing URL
     localPath: "/models/spaceship 5.glb",
     radius: 7.0,
     category: 'spaceship'

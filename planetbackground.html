@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Sci-Fi Earth Planet</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #000033 100%);
+            font-family: 'Arial', sans-serif;
+            cursor: grab;
+        }
+        
+        body:active {
+            cursor: grabbing;
+        }
+        
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffff00;
+            font-size: 14px;
+            text-shadow: 0 0 10px #ffff00;
+            z-index: 100;
+            background: rgba(25, 0, 51, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #ffff00;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+        
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ffff00; }
+            to { text-shadow: 0 0 20px #ffff00, 0 0 30px #ffff00; }
+        }
+        
+        #asteroid-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .asteroid {
+            position: absolute;
+            background: linear-gradient(45deg, #666, #999);
+            border-radius: 50%;
+            animation: float 10s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="asteroid-field"></div>
+    
+    <div id="controls" class="glow">
+        <div>🌍 ENHANCED COSMIC EXPLORER</div>
+        <div>Mouse: Spin Planet</div>
+        <div>Scroll: Zoom In/Out</div>
+        <div>Spacebar: Toggle Auto-rotation</div>
+        <div>Auto-rotation: ON</div>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, earth, stars, cloudLayer1, cloudLayer2, rings, atmosphere;
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let currentRotationX = 0, currentRotationY = 0;
+        let isMouseDown = false;
+        let autoRotate = true;
+        
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setClearColor(0x000000, 0);
+            
+            // Create starry background
+            createStarField();
+            
+            // Create floating asteroids
+            createAsteroids();
+            
+            // Create Enhanced Earth
+            createEarth();
+            
+            // Create atmosphere glow
+            createAtmosphere();
+            
+            // Create multiple ring systems
+            createRings();
+            
+            // Create multiple cloud layers
+            createClouds();
+            
+            // Enhanced lighting setup
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            sunLight.position.set(8, 5, 5);
+            sunLight.castShadow = true;
+            scene.add(sunLight);
+            
+            // More colorful space lights
+            const magentaLight = new THREE.PointLight(0xff0080, 1.0, 60);
+            magentaLight.position.set(-15, 10, 10);
+            scene.add(magentaLight);
+            
+            const cyanLight = new THREE.PointLight(0x00ffff, 0.8, 60);
+            cyanLight.position.set(15, -10, 15);
+            scene.add(cyanLight);
+            
+            const yellowLight = new THREE.PointLight(0xffff00, 0.6, 40);
+            yellowLight.position.set(0, 20, -20);
+            scene.add(yellowLight);
+            
+            const greenLight = new THREE.PointLight(0x00ff80, 0.5, 35);
+            greenLight.position.set(-10, -15, 8);
+            scene.add(greenLight);
+            
+            camera.position.z = 8;
+            
+            // Event listeners
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('wheel', onWheel);
+            document.addEventListener('keydown', onKeyDown);
+            window.addEventListener('resize', onWindowResize);
+            
+            animate();
+        }
+        
+        function createStarField() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 2500;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+            const sizes = new Float32Array(starCount);
+            
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 1000;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 1000;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 1000;
+                
+                sizes[i] = Math.random() * 4 + 1;
+                
+                // More varied colorful stars
+                const colorChoice = Math.random();
+                if (colorChoice < 0.25) {
+                    colors[i * 3] = 1; colors[i * 3 + 1] = 1; colors[i * 3 + 2] = 0.4; // Yellow
+                } else if (colorChoice < 0.4) {
+                    colors[i * 3] = 0.4; colors[i * 3 + 1] = 0.8; colors[i * 3 + 2] = 1; // Cyan
+                } else if (colorChoice < 0.55) {
+                    colors[i * 3] = 1; colors[i * 3 + 1] = 0.4; colors[i * 3 + 2] = 0.8; // Magenta
+                } else if (colorChoice < 0.7) {
+                    colors[i * 3] = 0.4; colors[i * 3 + 1] = 1; colors[i * 3 + 2] = 0.6; // Green
+                } else if (colorChoice < 0.85) {
+                    colors[i * 3] = 1; colors[i * 3 + 1] = 0.6; colors[i * 3 + 2] = 0.2; // Orange
+                } else {
+                    colors[i * 3] = 1; colors[i * 3 + 1] = 1; colors[i * 3 + 2] = 1; // White
+                }
+            }
+            
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const starMaterial = new THREE.ShaderMaterial({
+                vertexShader: `
+                    attribute float size;
+                    varying vec3 vColor;
+                    void main() {
+                        vColor = color;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = size * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    void main() {
+                        float dist = length(gl_PointCoord - vec2(0.5));
+                        if (dist > 0.5) discard;
+                        float opacity = 1.0 - (dist * 2.0);
+                        gl_FragColor = vec4(vColor, opacity);
+                    }
+                `,
+                vertexColors: true,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+            
+            stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+        
+        function createAsteroids() {
+            const asteroidField = document.getElementById('asteroid-field');
+            for (let i = 0; i < 12; i++) {
+                const asteroid = document.createElement('div');
+                asteroid.className = 'asteroid';
+                asteroid.style.width = Math.random() * 8 + 3 + 'px';
+                asteroid.style.height = asteroid.style.width;
+                asteroid.style.left = Math.random() * 100 + '%';
+                asteroid.style.animationDelay = Math.random() * 10 + 's';
+                asteroid.style.animationDuration = (Math.random() * 20 + 15) + 's';
+                asteroidField.appendChild(asteroid);
+            }
+        }
+        
+        function createEarth() {
+            const earthGeometry = new THREE.SphereGeometry(3, 64, 64);
+            
+            // Create enhanced alien planet texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Multi-layered gradient background
+            const gradient1 = ctx.createRadialGradient(512, 256, 0, 512, 256, 600);
+            gradient1.addColorStop(0, '#bb66ff');
+            gradient1.addColorStop(0.3, '#9944dd');
+            gradient1.addColorStop(0.6, '#6622bb');
+            gradient1.addColorStop(0.9, '#441199');
+            gradient1.addColorStop(1, '#220088');
+            ctx.fillStyle = gradient1;
+            ctx.fillRect(0, 0, 1024, 512);
+            
+            // Add energy veins/lightning patterns
+            ctx.strokeStyle = '#ff44ff';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff44ff';
+            
+            for (let i = 0; i < 15; i++) {
+                ctx.beginPath();
+                let x = Math.random() * 1024;
+                let y = Math.random() * 512;
+                ctx.moveTo(x, y);
+                
+                for (let j = 0; j < 8; j++) {
+                    x += (Math.random() - 0.5) * 120;
+                    y += (Math.random() - 0.5) * 80;
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            
+            ctx.shadowBlur = 0;
+            
+            // Add crystalline formations
+            const crystalColors = [
+                { color: '#ff88ff', opacity: 0.8 },
+                { color: '#8844ff', opacity: 0.6 },
+                { color: '#44ffff', opacity: 0.4 },
+                { color: '#ffff44', opacity: 0.3 }
+            ];
+            
+            crystalColors.forEach(crystal => {
+                ctx.fillStyle = crystal.color;
+                ctx.globalAlpha = crystal.opacity;
+                
+                // Hexagonal crystal patterns
+                for (let i = 0; i < 25; i++) {
+                    const x = Math.random() * 1024;
+                    const y = Math.random() * 512;
+                    const size = Math.random() * 40 + 20;
+                    
+                    ctx.beginPath();
+                    for (let j = 0; j < 6; j++) {
+                        const angle = (j * Math.PI) / 3;
+                        const px = x + Math.cos(angle) * size;
+                        const py = y + Math.sin(angle) * size;
+                        if (j === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                // Add some circular energy spots
+                for (let i = 0; i < 30; i++) {
+                    const x = Math.random() * 1024;
+                    const y = Math.random() * 512;
+                    const radius = Math.random() * 30 + 10;
+                    
+                    const spotGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                    spotGradient.addColorStop(0, crystal.color);
+                    spotGradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = spotGradient;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            
+            ctx.globalAlpha = 1.0;
+            
+            // Add some glowing highlights
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.3;
+            
+            for (let i = 0; i < 40; i++) {
+                const x = Math.random() * 1024;
+                const y = Math.random() * 512;
+                const radius = Math.random() * 15 + 3;
+                
+                const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                glowGradient.addColorStop(0, '#ffffff');
+                glowGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = glowGradient;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.globalAlpha = 1.0;
+            
+            const earthTexture = new THREE.CanvasTexture(canvas);
+            
+            const earthMaterial = new THREE.MeshPhongMaterial({
+                map: earthTexture,
+                shininess: 120,
+                specular: 0xaa66ff,
+                emissive: 0x221144
+            });
+            
+            earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            earth.receiveShadow = true;
+            earth.castShadow = true;
+            scene.add(earth);
+        }
+        
+        function createAtmosphere() {
+            const atmosphereGeometry = new THREE.SphereGeometry(3.3, 64, 64);
+            const atmosphereMaterial = new THREE.ShaderMaterial({
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        float intensity = pow(0.7 - dot(vNormal, vec3(0, 0, 1.0)), 2.0);
+                        gl_FragColor = vec4(0.8, 0.4, 1.0, 1.0) * intensity;
+                    }
+                `,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide,
+                transparent: true
+            });
+            
+            atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            scene.add(atmosphere);
+        }
+        
+        function createRings() {
+            // Create multiple ring systems
+            const ringGroup = new THREE.Group();
+            
+            // Main ring system
+            const mainRing = createRingSystem(4.2, 6.0, ['#ffff00', '#ff8800', '#ff0088', '#8800ff', '#0088ff']);
+            mainRing.rotation.x = Math.PI / 2;
+            mainRing.rotation.z = Math.PI / 6;
+            ringGroup.add(mainRing);
+            
+            // Secondary ring system
+            const secondaryRing = createRingSystem(6.5, 7.5, ['#00ff88', '#88ff00', '#ff4400']);
+            secondaryRing.rotation.x = Math.PI / 2;
+            secondaryRing.rotation.z = -Math.PI / 4;
+            ringGroup.add(secondaryRing);
+            
+            // Thin inner ring
+            const innerRing = createRingSystem(3.8, 4.0, ['#ffffff', '#ffff88']);
+            innerRing.rotation.x = Math.PI / 2;
+            innerRing.rotation.z = Math.PI / 8;
+            ringGroup.add(innerRing);
+            
+            rings = ringGroup;
+            scene.add(rings);
+        }
+        
+        function createRingSystem(innerRadius, outerRadius, colors) {
+            const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 128);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            const bandWidth = canvas.width / colors.length;
+            
+            for (let i = 0; i < colors.length; i++) {
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, colors[i]);
+                gradient.addColorStop(0.5, colors[i] + '88');
+                gradient.addColorStop(1, colors[i]);
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(i * bandWidth, 0, bandWidth, canvas.height);
+            }
+            
+            const ringTexture = new THREE.CanvasTexture(canvas);
+            
+            const ringMaterial = new THREE.MeshPhongMaterial({
+                map: ringTexture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            return new THREE.Mesh(ringGeometry, ringMaterial);
+        }
+        
+        function createClouds() {
+            // Create multiple cloud layers for dynamic effect
+            cloudLayer1 = createCloudLayer(3.12, 0.6, '#bb88ff');
+            cloudLayer2 = createCloudLayer(3.18, 0.4, '#88bbff');
+            
+            scene.add(cloudLayer1);
+            scene.add(cloudLayer2);
+        }
+        
+        function createCloudLayer(radius, opacity, baseColor) {
+            const cloudGeometry = new THREE.SphereGeometry(radius, 64, 64);
+            
+            const cloudCanvas = document.createElement('canvas');
+            cloudCanvas.width = 512;
+            cloudCanvas.height = 256;
+            const cloudCtx = cloudCanvas.getContext('2d');
+            
+            cloudCtx.fillStyle = 'rgba(0,0,0,0)';
+            cloudCtx.fillRect(0, 0, 512, 256);
+            
+            // Create more dynamic cloud patterns
+            const cloudColors = [
+                baseColor + 'AA',
+                baseColor + '88', 
+                baseColor + '66',
+                baseColor + '44'
+            ];
+            
+            // Large cloud formations
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * 600 - 50;
+                const y = Math.random() * 300 - 25;
+                const radius = Math.random() * 60 + 30;
+                
+                const cloudGradient = cloudCtx.createRadialGradient(x, y, 0, x, y, radius);
+                cloudGradient.addColorStop(0, cloudColors[0]);
+                cloudGradient.addColorStop(0.6, cloudColors[1]);
+                cloudGradient.addColorStop(1, 'transparent');
+                
+                cloudCtx.fillStyle = cloudGradient;
+                cloudCtx.beginPath();
+                cloudCtx.arc(x, y, radius, 0, Math.PI * 2);
+                cloudCtx.fill();
+            }
+            
+            // Medium cloud wisps
+            for (let i = 0; i < 35; i++) {
+                const x = Math.random() * 600 - 50;
+                const y = Math.random() * 300 - 25;
+                const width = Math.random() * 80 + 40;
+                const height = Math.random() * 30 + 15;
+                
+                cloudCtx.fillStyle = cloudColors[Math.floor(Math.random() * cloudColors.length)];
+                cloudCtx.beginPath();
+                cloudCtx.ellipse(x, y, width, height, Math.random() * Math.PI, 0, Math.PI * 2);
+                cloudCtx.fill();
+            }
+            
+            // Small cloud details
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * 600 - 50;
+                const y = Math.random() * 300 - 25;
+                const radius = Math.random() * 20 + 5;
+                
+                cloudCtx.fillStyle = cloudColors[Math.floor(Math.random() * cloudColors.length)];
+                cloudCtx.beginPath();
+                cloudCtx.arc(x, y, radius, 0, Math.PI * 2);
+                cloudCtx.fill();
+            }
+            
+            const cloudTexture = new THREE.CanvasTexture(cloudCanvas);
+            
+            const cloudMaterial = new THREE.MeshPhongMaterial({
+                map: cloudTexture,
+                transparent: true,
+                opacity: opacity,
+                depthWrite: false
+            });
+            
+            return new THREE.Mesh(cloudGeometry, cloudMaterial);
+        }
+        
+        function onMouseDown(event) {
+            isMouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+            autoRotate = false;
+        }
+        
+        function onMouseUp() {
+            isMouseDown = false;
+        }
+        
+        function onMouseMove(event) {
+            if (isMouseDown) {
+                const deltaX = event.clientX - mouseX;
+                const deltaY = event.clientY - mouseY;
+                
+                targetRotationY += deltaX * 0.01;
+                targetRotationX += deltaY * 0.01;
+                
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+        
+        function onWheel(event) {
+            event.preventDefault();
+            const zoomSpeed = 0.3;
+            const minDistance = 5;
+            const maxDistance = 25;
+            
+            if (event.deltaY > 0) {
+                camera.position.z = Math.min(camera.position.z + zoomSpeed, maxDistance);
+            } else {
+                camera.position.z = Math.max(camera.position.z - zoomSpeed, minDistance);
+            }
+        }
+        
+        function onKeyDown(event) {
+            if (event.key === ' ') {
+                autoRotate = !autoRotate;
+                const controlsDiv = document.getElementById('controls');
+                controlsDiv.innerHTML = controlsDiv.innerHTML.replace(
+                    /Auto-rotation: (ON|OFF)/,
+                    `Auto-rotation: ${autoRotate ? 'ON' : 'OFF'}`
+                );
+            }
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.001;
+            
+            // Smooth rotation interpolation
+            currentRotationX += (targetRotationX - currentRotationX) * 0.05;
+            currentRotationY += (targetRotationY - currentRotationY) * 0.05;
+            
+            // Apply rotations to planet
+            earth.rotation.x = currentRotationX;
+            earth.rotation.y = currentRotationY;
+            
+            // Atmosphere rotates with planet
+            atmosphere.rotation.x = currentRotationX;
+            atmosphere.rotation.y = currentRotationY;
+            
+            // Dynamic cloud rotation at different speeds
+            cloudLayer1.rotation.x = currentRotationX;
+            cloudLayer1.rotation.y = currentRotationY + time * 0.3;
+            
+            cloudLayer2.rotation.x = currentRotationX;
+            cloudLayer2.rotation.y = currentRotationY - time * 0.2;
+            
+            // Multiple ring rotations
+            rings.children[0].rotation.y += 0.008; // Main ring
+            rings.children[1].rotation.y -= 0.005; // Secondary ring
+            rings.children[2].rotation.y += 0.015; // Inner ring
+            
+            // Auto-rotation
+            if (autoRotate) {
+                targetRotationY += 0.002;
+            }
+            
+            // Animate stars
+            stars.rotation.y += 0.0003;
+            stars.rotation.x += 0.0002;
+            
+            renderer.render(scene, camera);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

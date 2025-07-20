@@ -326,3 +326,16 @@ git push -u origin main
 **Last Updated:** July 19, 2025  
 **Next Review:** Phase 5 completion  
 **Maintained by:** PxlCorp Development Team 
+
+## 2025-07-20 Front-end overhaul
+
+* Replaced old InventoryBox with Hangar modal + trigger button.
+* Added Recent Deploys modal available to all visitors.
+* Implemented multi-step Launch Wizard (Commander Profile → Spaceship Identity → Visual Deck).
+* Added pill-based Orbit Tags input with 3-tag limit.
+* Introduced custom glassmorphic inputs, checkboxes & radio buttons.
+* Added slim translucent custom scrollbar and conditional scrolling.
+* CameraManager now zooms out automatically on mobile.
+* Integrated Barriecito branding font + Poppins form font.
+* Updated CartoonButton styling to retro offset-shadow style.
+* Planet scene, starfield tweaks, and modal animations. 

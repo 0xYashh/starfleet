@@ -1,0 +1,278 @@
+# MILLIONSHIP - TECH STACK & DEVELOPMENT RULES
+# Lightweight 3D Web Application
+
+## 🏗️ CORE ARCHITECTURE
+**Frontend Framework**: Next.js 14 with App Router
+**3D Graphics**: Three.js (r158+) for WebGL rendering
+**UI Components**: Tailwind CSS + Headless UI
+**State Management**: Zustand (lightweight Redux alternative)
+**Database**: Supabase (PostgreSQL with real-time)
+**Authentication**: Supabase Auth
+**Payments**: Dodo Payments API
+**Deployment**: Vercel (optimized for Next.js)
+
+## 📦 PACKAGE STRUCTURE
+```
+millionship/
+├── app/                    # Next.js 14 App Router
+│   ├── globals.css        # Tailwind + custom styles
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Main 3D scene
+│   └── api/               # API routes
+├── components/
+│   ├── Scene/             # 3D components
+│   │   ├── Earth.tsx      # Earth model component
+│   │   ├── Satellite.tsx  # Satellite instances
+│   │   ├── Starfield.tsx  # Background stars
+│   │   └── Camera.tsx     # Camera controls
+│   ├── UI/                # Interface components
+│   │   ├── LaunchModal.tsx
+│   │   ├── ProductModal.tsx
+│   │   └── Tooltip.tsx
+│   └── Layout/            # Layout components
+├── lib/
+│   ├── three/             # Three.js utilities
+│   ├── supabase/          # Database client
+│   └── dodo-payments/     # Dodo Payments integration
+├── public/
+│   ├── models/            # 3D models (GLB/GLTF)
+│   ├── textures/          # Earth/space textures
+│   └── icons/             # UI icons
+└── types/                 # TypeScript definitions
+```
+
+## 🎨 FRONTEND STACK
+**React**: 18.2+ (with concurrent features)
+**TypeScript**: 5.0+ (strict mode enabled)
+**Tailwind CSS**: 3.4+ (for rapid styling)
+**Framer Motion**: 10.0+ (for smooth animations)
+**React Hook Form**: 7.0+ (form validation)
+**Zod**: 3.0+ (schema validation)
+
+## 🌐 3D GRAPHICS STACK
+**Three.js**: Latest stable (r158+)
+**GLB/GLTF**: 3D model format (compressed)
+**WebGL**: 2.0 support with 1.0 fallback
+**Post-processing**: Subtle bloom/glow effects
+**Optimization**: Frustum culling, LOD, texture compression
+
+## 🗄️ BACKEND STACK
+**Supabase**: 
+- PostgreSQL database
+- Real-time subscriptions
+- Edge functions for complex operations
+- Row-level security (RLS)
+- Built-in authentication
+
+**Database Schema**:
+```sql
+-- Products table
+products (
+  id uuid PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  description text,
+  website_url varchar(255),
+  logo_url varchar(255),
+  satellite_type varchar(50),
+  price integer,
+  orbit_altitude integer,
+  dodo_product_id varchar(255), -- Dodo Payments product ID
+  created_at timestamp,
+  user_id uuid REFERENCES auth.users
+);
+
+-- Payments table
+payments (
+  id uuid PRIMARY KEY,
+  product_id uuid REFERENCES products(id),
+  dodo_payment_id varchar(255), -- Dodo payment ID
+  amount integer,
+  status varchar(50),
+  webhook_data jsonb, -- Store webhook payload
+  created_at timestamp
+);
+```
+
+## 💳 PAYMENT INTEGRATION
+**Dodo Payments**: 
+- Static Payment Links for simple checkouts
+- Dynamic Payment Links via API for custom flows
+- Webhooks for payment confirmation (Standard Webhooks spec)
+- Test mode with test card: 4242 4242 4242 4242
+- Query parameters for pre-filling customer data
+- Metadata support for custom order information
+- Node.js SDK available on GitHub
+
+**Integration Methods**:
+1. **Static Links**: Simple product ID appended to base URL
+2. **Dynamic Links**: API-created with customer details
+3. **Webhook Handling**: Standard Webhooks specification
+
+**Environment Setup**:
+- Test Mode: `https://test.dodopayments.com`
+- Live Mode: `https://live.dodopayments.com`
+
+## 🚀 DEPLOYMENT STRATEGY
+**Vercel**: 
+- Edge Functions for API routes
+- CDN for static assets (models, textures)
+- Automatic SSL certificates
+- Preview deployments for PRs
+
+**Environment Variables**:
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+DODO_PAYMENTS_API_KEY=
+DODO_PAYMENTS_WEBHOOK_SECRET=
+NEXT_PUBLIC_DODO_PAYMENTS_BASE_URL=
+```
+
+## 🎯 PERFORMANCE OPTIMIZATIONS
+**3D Rendering**:
+- Frustum culling for off-screen objects
+- Level-of-detail (LOD) for distant satellites
+- Texture compression (KTX2/Basis Universal)
+- Instanced rendering for multiple satellites
+
+**Web Performance**:
+- Next.js Image optimization
+- Code splitting by route
+- Lazy loading for 3D models
+- Service Worker for offline support
+
+## 📱 MOBILE OPTIMIZATION
+**Touch Controls**:
+- Gesture handling for orbit camera
+- Pinch-to-zoom support
+- Touch-friendly UI elements
+- Reduced particle effects for performance
+
+**Responsive Design**:
+- Mobile-first CSS approach
+- Adaptive model quality
+- Simplified UI on small screens
+- Progressive enhancement
+
+## 🔧 DEVELOPMENT TOOLS
+**ESLint**: Code linting with strict rules
+**Prettier**: Code formatting
+**Husky**: Git hooks for pre-commit checks
+**TypeScript**: Strict type checking
+**Cursor**: AI-powered development
+
+## 🧪 TESTING STRATEGY
+**Unit Tests**: Jest + React Testing Library
+**E2E Tests**: Playwright for critical flows
+**3D Testing**: Manual testing for rendering
+**Performance**: Lighthouse CI integration
+
+## 🛡️ SECURITY MEASURES
+**Input Validation**:
+- Zod schemas for all forms
+- File upload restrictions
+- Rate limiting on API routes
+- CSRF protection
+
+**Database Security**:
+- Row-level security (RLS)
+- Prepared statements
+- Input sanitization
+- Secure environment variables
+
+## 📊 MONITORING & ANALYTICS
+**Vercel Analytics**: Built-in performance monitoring
+**Sentry**: Error tracking and performance
+**PostHog**: User behavior analytics
+**Custom Metrics**: 3D rendering performance
+
+## 🔄 REAL-TIME FEATURES
+**Supabase Realtime**:
+- Live satellite additions
+- Real-time orbit updates
+- Collaborative exploration
+- WebSocket connections
+
+## 🎨 STYLING GUIDELINES
+**Tailwind CSS**:
+- Dark theme as primary
+- Space/cosmic color palette
+- Glass morphism effects
+- Consistent spacing scale
+
+**Color Scheme**:
+```css
+/* Primary colors */
+--space-dark: #0a0a0f
+--space-blue: #1e3a8a
+--neon-blue: #00d4ff
+--star-white: #ffffff
+--gold-accent: #fbbf24
+```
+
+## 🔍 SEO OPTIMIZATION
+**Meta Tags**: Dynamic product pages
+**Open Graph**: Social media sharing
+**Structured Data**: Product schema markup
+**Sitemap**: Auto-generated XML sitemap
+
+## 🌟 PROGRESSIVE ENHANCEMENT
+**WebGL Fallback**: 2D canvas for unsupported devices
+**Reduced Motion**: Respect user preferences
+**Offline Support**: Service Worker caching
+**Accessibility**: ARIA labels and keyboard navigation
+
+## 🚀 DEVELOPMENT WORKFLOW
+1. **Local Development**: `npm run dev`
+2. **Type Checking**: `npm run type-check`
+3. **Linting**: `npm run lint`
+4. **Testing**: `npm run test`
+5. **Build**: `npm run build`
+6. **Deploy**: Push to main branch (auto-deploy)
+
+## 📈 SCALABILITY CONSIDERATIONS
+**Database**: Supabase scales automatically
+**CDN**: Vercel Edge Network globally
+**3D Models**: Compressed and optimized
+**Caching**: Aggressive caching strategies
+
+## 🔒 BACKUP STRATEGY
+**Database**: Supabase automatic backups
+**Assets**: Git LFS for large files
+**Environment**: Documented configuration
+**Deployment**: Vercel rollback capability
+
+## 🎯 BUNDLE SIZE TARGETS
+- **Initial JS**: < 100KB gzipped
+- **3D Models**: < 2MB total
+- **Textures**: < 5MB total
+- **Runtime**: < 50MB memory usage
+
+## 🌐 BROWSER SUPPORT
+- **Chrome**: 90+
+- **Firefox**: 88+
+- **Safari**: 14+
+- **Edge**: 90+
+- **Mobile**: iOS 14+, Android 8+
+
+## 🔧 DEVELOPMENT COMMANDS
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm run test
+
+# Type checking
+npm run type-check
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
+```
