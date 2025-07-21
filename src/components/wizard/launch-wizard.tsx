@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { CartoonButton } from '@/components/ui/cartoon-button';
 import { cn } from '@/lib/utils';
-import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import { getFreeVehicles, getPaidVehicles, getVehicleById } from '@/lib/data/spaceships';
 import { VehiclePreview } from './vehicle-preview';
 import useEmblaCarousel from 'embla-carousel-react';

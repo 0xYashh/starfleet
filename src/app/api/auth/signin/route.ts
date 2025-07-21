@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     
     // Disable PKCE for magic links to fix mobile browser switching issues
     // Magic links are already secure via email verification
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: redirectTo,
