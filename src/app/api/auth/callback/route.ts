@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     origin,
     userAgent,
     isMobile: /Mobile|Android|iPhone|iPad/.test(userAgent),
+    allParams: Object.fromEntries(searchParams.entries()),
     timestamp: new Date().toISOString()
   });
 
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     
     try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      // Use exchangeCodeForSession which handles PKCE properly
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
       if (error) {
         console.error('[AUTH CALLBACK] Session exchange error:', {
@@ -28,16 +30,29 @@ export async function GET(request: NextRequest) {
           userAgent,
           timestamp: new Date().toISOString()
         });
-        // Redirect to homepage with error
+        
+        // More specific error handling
+        if (error.message?.includes('code verifier')) {
+          console.error('[AUTH CALLBACK] PKCE code verifier issue - this is a Supabase configuration problem');
+          return NextResponse.redirect(`${origin}/?error=pkce_failed`);
+        }
+        
         return NextResponse.redirect(`${origin}/?error=auth_failed`);
       }
       
-      console.log('[AUTH CALLBACK] Session exchange successful', {
-        userAgent,
-        timestamp: new Date().toISOString()
-      });
-      // Redirect to homepage on success
-      return NextResponse.redirect(`${origin}/`);
+      if (data?.user) {
+        console.log('[AUTH CALLBACK] Session exchange successful', {
+          userId: data.user.id,
+          userAgent,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Successful authentication - redirect to home
+        return NextResponse.redirect(`${origin}/`);
+      } else {
+        console.warn('[AUTH CALLBACK] No user data returned despite no error');
+        return NextResponse.redirect(`${origin}/?error=no_user`);
+      }
       
     } catch (err) {
       console.error('[AUTH CALLBACK] Unexpected error:', {
@@ -55,5 +70,5 @@ export async function GET(request: NextRequest) {
     searchParams: Object.fromEntries(searchParams.entries()),
     timestamp: new Date().toISOString()
   });
-  return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${origin}/?error=no_code`);
 }
