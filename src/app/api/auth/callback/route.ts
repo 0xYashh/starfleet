@@ -15,11 +15,23 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     
     try {
-      // Exchange code for session
+      // First try to exchange the code
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
       if (error) {
         console.error('[AUTH CALLBACK] Session exchange error:', error.message);
+        
+        // If PKCE fails, try to get existing session (mobile fallback)
+        if (error.message?.includes('code verifier') || error.message?.includes('PKCE')) {
+          console.log('[AUTH CALLBACK] PKCE failed, checking for existing session...');
+          
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user) {
+            console.log('[AUTH CALLBACK] Found existing session, redirecting to success');
+            return NextResponse.redirect(`${origin}/?auth_success=true`);
+          }
+        }
+        
         return NextResponse.redirect(`${origin}/?error=auth_failed`);
       }
       
@@ -37,6 +49,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.warn('[AUTH CALLBACK] No code provided in callback');
+  // No code provided - check if user already has a session
+  const supabase = await createClient();
+  const { data: sessionData } = await supabase.auth.getSession();
+  
+  if (sessionData?.session?.user) {
+    console.log('[AUTH CALLBACK] No code but found existing session');
+    return NextResponse.redirect(`${origin}/?auth_success=true`);
+  }
+
+  console.warn('[AUTH CALLBACK] No code provided and no existing session');
   return NextResponse.redirect(`${origin}/?error=no_code`);
 }
