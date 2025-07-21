@@ -24,11 +24,10 @@ export async function POST(req: NextRequest) {
     // Log the attempt (useful for production monitoring)
     console.log(`[AUTH] Magic link requested for: ${email} at ${new Date().toISOString()}`);
     
-    // Force production URL in production environment
-    const isProduction = process.env.NODE_ENV === 'production' || req.nextUrl.hostname !== 'localhost';
-    const redirectTo = isProduction 
-      ? 'https://starfleet-pxlcorp.vercel.app'
-      : req.nextUrl.origin;
+    // Use the actual request origin for redirect URL
+    // This ensures mobile devices redirect to the correct domain
+    const origin = req.nextUrl.origin;
+    const redirectTo = origin;
     
     console.log(`[AUTH] Environment: ${process.env.NODE_ENV}, Hostname: ${req.nextUrl.hostname}`);
     console.log(`[AUTH] Using redirect URL: ${redirectTo}`);
@@ -78,4 +77,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
