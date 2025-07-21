@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { CartoonButton } from '@/components/ui/cartoon-button';
 import { useAuth } from './auth-provider';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface SignInModalProps {
   open: boolean;
@@ -24,11 +24,6 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(/Mobile|Android|iPhone|iPad/.test(navigator.userAgent));
-  }, []);
 
   async function handleSend() {
     if (!email || !email.includes('@')) {
@@ -81,19 +76,6 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
               <p className="text-green-400 text-sm">
                 Magic link sent! Check your email to complete sign-in.
               </p>
-              
-              {isMobile && (
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 space-y-2">
-                  <p className="text-blue-300 text-xs font-medium">
-                    📱 Mobile Tip:
-                  </p>
-                  <p className="text-white/80 text-xs">
-                    Open the magic link in your main browser (Chrome/Safari) for best results. 
-                    If it opens in your email app, copy the link and paste it in your browser.
-                  </p>
-                </div>
-              )}
-              
               <p className="text-white/60 text-xs">
                 {"Don't see it? Check your spam folder or try again."}
               </p>
@@ -114,15 +96,6 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 <p className="text-red-400 text-sm bg-red-500/10 p-2 rounded border border-red-500/20">
                   {error}
                 </p>
-              )}
-              
-              {isMobile && (
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
-                  <p className="text-yellow-300 text-xs">
-                    💡 <strong>Mobile users:</strong> After clicking the magic link in your email, 
-                    make sure to open it in your main browser for the smoothest experience.
-                  </p>
-                </div>
               )}
               
               <CartoonButton
