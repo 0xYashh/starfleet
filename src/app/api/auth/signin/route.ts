@@ -21,41 +21,31 @@ export async function POST(req: NextRequest) {
     const { email } = parsed.data;
     const supabase = await createClient();
     
-    // Log the attempt (useful for production monitoring)
-    console.log(`[AUTH] Magic link requested for: ${email} at ${new Date().toISOString()}`);
+    console.log(`[AUTH] Magic link requested for: ${email}`);
     
-    // Use the actual request origin for redirect URL
-    // This ensures mobile devices redirect to the correct domain
     const origin = req.nextUrl.origin;
     const redirectTo = `${origin}/api/auth/callback`;
     
-    console.log(`[AUTH] Environment: ${process.env.NODE_ENV}, Hostname: ${req.nextUrl.hostname}`);
-    console.log(`[AUTH] Using redirect URL: ${redirectTo}`);
-    
-    // Use signInWithOtp with proper PKCE flow
+    // Disable PKCE for magic links to fix mobile browser switching issues
+    // Magic links are already secure via email verification
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: redirectTo,
-        // Ensure PKCE is enabled for security
         shouldCreateUser: true,
+        // Disable PKCE to prevent mobile browser session isolation issues
+        data: {
+          flow_type: 'magic_link'
+        }
       },
     });
     
     if (error) {
-      // Log specific error types to detect rate limiting
-      console.error(`[AUTH] Supabase error for ${email}:`, {
-        message: error.message,
-        status: error.status,
-        code: error.code || 'unknown',
-        timestamp: new Date().toISOString()
-      });
+      console.error(`[AUTH] Error for ${email}:`, error.message);
       
-      // Check if it's a rate limit error
       if (error.message?.toLowerCase().includes('rate') || 
           error.message?.toLowerCase().includes('limit') ||
           error.status === 429) {
-        console.warn(`[AUTH] RATE LIMITED: ${email} - ${error.message}`);
         return NextResponse.json(
           { error: 'Too many requests. Please try again in a few minutes.' }, 
           { status: 429 }
@@ -68,10 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[AUTH] Magic link sent successfully to: ${email}`, {
-      hasData: !!data,
-      timestamp: new Date().toISOString()
-    });
+    console.log(`[AUTH] Magic link sent successfully to: ${email}`);
     
     return NextResponse.json({ 
       success: true, 
