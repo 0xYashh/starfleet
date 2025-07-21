@@ -43,12 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // When user signs out, navigate to home and clean up
       if (event === 'SIGNED_OUT') {
-        console.log('[AUTH] User signed out, redirecting to home');
+        console.log('[AUTH] SIGNED_OUT event received');
         setUser(null);
         setLoading(false);
         
-        // Redirect to home - Next.js router will handle URL cleaning
-        router.replace('/');
+        // Only redirect if we're not already on the home page
+        // This prevents conflicts with manual signOut() redirects
+        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+          console.log('[AUTH] Redirecting to home from SIGNED_OUT event');
+          router.replace('/');
+        }
       }
     });
 
@@ -113,6 +117,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('[AUTH] Starting sign-out process');
       
+      // First, clear local state immediately for responsive UI
+      setUser(null);
+      setLoading(false);
+      
       // Make POST request to sign-out API endpoint
       const response = await fetch('/api/auth/signout', {
         method: 'POST',
@@ -124,23 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Sign-out API error:', errorData);
-        throw new Error(errorData.error || 'Sign-out failed');
+        // Even if server sign-out fails, still redirect (user sees signed out state)
+      } else {
+        console.log('[AUTH] Server sign-out successful');
       }
-
-      console.log('[AUTH] Server sign-out successful');
       
-      // Add a small delay to let the auth state change event fire
-      setTimeout(() => {
-        // If we're still on the same page after a delay, force redirect
-        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-          console.log('[AUTH] Forcing redirect to home as fallback');
-          router.replace('/');
-        }
-      }, 1000);
+      // Always redirect to home after sign-out attempt
+      router.replace('/');
       
     } catch (err) {
       console.error('Unexpected sign-out error:', err);
-      // Force clear local state and redirect as fallback
+      // Force clear local state and redirect even on error
       setUser(null);
       setLoading(false);
       router.replace('/');
