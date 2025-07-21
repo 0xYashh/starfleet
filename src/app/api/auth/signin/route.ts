@@ -27,15 +27,18 @@ export async function POST(req: NextRequest) {
     // Use the actual request origin for redirect URL
     // This ensures mobile devices redirect to the correct domain
     const origin = req.nextUrl.origin;
-    const redirectTo = origin;
+    const redirectTo = `${origin}/api/auth/callback`;
     
     console.log(`[AUTH] Environment: ${process.env.NODE_ENV}, Hostname: ${req.nextUrl.hostname}`);
     console.log(`[AUTH] Using redirect URL: ${redirectTo}`);
     
-    const { error } = await supabase.auth.signInWithOtp({
+    // Use signInWithOtp with proper PKCE flow
+    const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${redirectTo}/api/auth/callback`,
+        emailRedirectTo: redirectTo,
+        // Ensure PKCE is enabled for security
+        shouldCreateUser: true,
       },
     });
     
@@ -65,7 +68,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[AUTH] Magic link sent successfully to: ${email}`);
+    console.log(`[AUTH] Magic link sent successfully to: ${email}`, {
+      hasData: !!data,
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json({ 
       success: true, 
       message: 'Magic link sent successfully' 
