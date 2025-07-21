@@ -27,8 +27,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen to auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
+      
+      // Ensure profile exists when user signs in
+      if (event === 'SIGNED_IN' && session?.user) {
+        await ensureProfile(session.user);
+      }
     });
 
     return () => {
@@ -36,21 +41,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Fallback profile creation if trigger fails
+  async function ensureProfile(user: User) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+        
+      if (error && error.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            display_name: user.email?.split('@')[0] || 'Pilot'
+          });
+          
+        if (insertError) {
+          console.error('Failed to create profile:', insertError);
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring profile:', error);
+    }
+  }
+
   async function signInWithEmail(email: string) {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      
+      if (error) {
+        console.error('Sign-in error:', error.message);
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
       console.error('Sign-in error:', error.message);
-      throw error;
+      throw new Error(error.message || 'Failed to send sign-in email');
     }
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Sign-out error:', error);
+    }
   }
 
   const value: AuthContextValue = {
@@ -67,4 +108,4 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
-} 
+}
