@@ -25,9 +25,29 @@ function HomeContent() {
   // Check for auth errors from URL params
   useEffect(() => {
     const error = searchParams.get('error');
-    if (error === 'auth_failed') {
-      console.error('Authentication failed');
+    if (error) {
+      console.error('Authentication error:', error);
+      
+      // More specific error logging for debugging
+      switch (error) {
+        case 'auth_failed':
+          console.error('AUTH ERROR: General authentication failure');
+          break;
+        case 'pkce_failed':
+          console.error('AUTH ERROR: PKCE code verifier issue - check Supabase configuration');
+          break;
+        case 'no_user':
+          console.error('AUTH ERROR: No user data returned from Supabase');
+          break;
+        case 'no_code':
+          console.error('AUTH ERROR: No auth code provided in callback');
+          break;
+        default:
+          console.error('AUTH ERROR: Unknown error:', error);
+      }
+      
       // You could show a toast notification here
+      // For now, just log to help with debugging
     }
   }, [searchParams]);
 
