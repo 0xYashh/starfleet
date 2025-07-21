@@ -3,7 +3,7 @@
 
 import { CartoonButton } from '@/components/ui/cartoon-button';
 import { SpaceScene } from '@/components/scene/SpaceScene';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { LaunchWizard } from '@/components/wizard/launch-wizard';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useCallback, useEffect } from 'react';
@@ -13,7 +13,7 @@ import { HangarModal } from '@/components/hangar/hangar-modal';
 import { RecentDeploysModal } from '@/components/deploys/recent-deploys-modal';
 import { useSearchParams } from 'next/navigation';
 
-export default function Home() {
+function HomeContent() {
   const { user, signOut } = useAuth();
   const searchParams = useSearchParams();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -110,5 +110,13 @@ export default function Home() {
       <HangarModal open={showHangar} onOpenChange={setShowHangar} />
       <RecentDeploysModal open={showRecentDeploys} onOpenChange={setShowRecentDeploys} />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <HomeContent />
+    </Suspense>
   );
 }
