@@ -47,13 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setLoading(false);
         
-        // Clean URL params and redirect
-        if (typeof window !== 'undefined') {
-          const url = new URL(window.location.href);
-          url.search = ''; // Clear query params
-          window.history.replaceState({}, document.title, url.pathname);
-        }
-        
+        // Redirect to home - Next.js router will handle URL cleaning
         router.replace('/');
       }
     });
@@ -135,8 +129,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log('[AUTH] Server sign-out successful');
       
-      // The auth state listener will handle the redirect automatically
-      // when it detects the SIGNED_OUT event
+      // Add a small delay to let the auth state change event fire
+      setTimeout(() => {
+        // If we're still on the same page after a delay, force redirect
+        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+          console.log('[AUTH] Forcing redirect to home as fallback');
+          router.replace('/');
+        }
+      }, 1000);
       
     } catch (err) {
       console.error('Unexpected sign-out error:', err);
