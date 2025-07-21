@@ -128,17 +128,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to create profile on user signup
+-- FIXED: Function to create profile on user signup with proper error handling
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO profiles (id, display_name)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'display_name');
+  VALUES (
+    NEW.id, 
+    COALESCE(
+      NEW.raw_user_meta_data->>'display_name',
+      NEW.raw_user_meta_data->>'full_name',
+      split_part(NEW.email, '@', 1),
+      'Pilot'
+    )
+  );
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error but don't fail the auth process
+    RAISE WARNING 'Failed to create profile for user %: %', NEW.id, SQLERRM;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 9. Create trigger for automatic profile creation
+-- 9. Drop existing trigger if it exists and create new one
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
@@ -147,4 +161,4 @@ CREATE TRIGGER on_auth_user_created
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated; 
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
