@@ -6,19 +6,30 @@ import { SpaceScene } from '@/components/scene/SpaceScene';
 import { useState } from 'react';
 import { LaunchWizard } from '@/components/wizard/launch-wizard';
 import { useAuth } from '@/components/auth/auth-provider';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { SignInModal } from '@/components/auth/sign-in-modal';
 import Image from 'next/image';
 import { HangarModal } from '@/components/hangar/hangar-modal';
 import { RecentDeploysModal } from '@/components/deploys/recent-deploys-modal';
+import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
   const { user, signOut } = useAuth();
+  const searchParams = useSearchParams();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showHangar, setShowHangar] = useState(false);
   const [showRecentDeploys, setShowRecentDeploys] = useState(false);
+
+  // Check for auth errors from URL params
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'auth_failed') {
+      console.error('Authentication failed');
+      // You could show a toast notification here
+    }
+  }, [searchParams]);
 
   const handleSignOut = useCallback(async () => {
     setIsSigningOut(true);
