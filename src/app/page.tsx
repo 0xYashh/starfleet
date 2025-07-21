@@ -21,10 +21,41 @@ function HomeContent() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [showHangar, setShowHangar] = useState(false);
   const [showRecentDeploys, setShowRecentDeploys] = useState(false);
+  const [mobileAuthMessage, setMobileAuthMessage] = useState<string | null>(null);
 
-  // Check for auth errors from URL params
+  // Check for auth errors and mobile auth scenarios from URL params
   useEffect(() => {
     const error = searchParams.get('error');
+    const authSuccess = searchParams.get('auth_success');
+    const mobileAuth = searchParams.get('mobile_auth');
+    const isMobile = searchParams.get('mobile');
+    
+    if (authSuccess) {
+      console.log('Authentication successful!');
+      if (isMobile) {
+        setMobileAuthMessage('✅ Successfully signed in! You can now close this tab and return to your main browser.');
+        setTimeout(() => setMobileAuthMessage(null), 5000);
+      }
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+    
+    if (mobileAuth) {
+      switch (mobileAuth) {
+        case 'retry':
+          setMobileAuthMessage('📱 Please open the magic link in your main browser (Chrome/Safari) instead of the email app.');
+          break;
+        case 'open_browser':
+          setMobileAuthMessage('📱 For best results, copy the magic link and paste it in your main browser.');
+          break;
+      }
+      setTimeout(() => setMobileAuthMessage(null), 8000);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+    
     if (error) {
       console.error('Authentication error:', error);
       
@@ -32,22 +63,28 @@ function HomeContent() {
       switch (error) {
         case 'auth_failed':
           console.error('AUTH ERROR: General authentication failure');
+          setMobileAuthMessage('❌ Authentication failed. Please try again.');
           break;
         case 'pkce_failed':
           console.error('AUTH ERROR: PKCE code verifier issue - check Supabase configuration');
+          setMobileAuthMessage('📱 Please open the magic link in your main browser (not email app).');
           break;
         case 'no_user':
           console.error('AUTH ERROR: No user data returned from Supabase');
+          setMobileAuthMessage('❌ Sign-in incomplete. Please try again.');
           break;
         case 'no_code':
           console.error('AUTH ERROR: No auth code provided in callback');
+          setMobileAuthMessage('📱 Please click the magic link directly from your email.');
           break;
         default:
           console.error('AUTH ERROR: Unknown error:', error);
+          setMobileAuthMessage('❌ Something went wrong. Please try again.');
       }
       
-      // You could show a toast notification here
-      // For now, just log to help with debugging
+      setTimeout(() => setMobileAuthMessage(null), 8000);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [searchParams]);
 
@@ -61,8 +98,15 @@ function HomeContent() {
     <div className="relative min-h-screen text-white">
       <SpaceScene />
       
+      {/* Mobile Auth Message */}
+      {mobileAuthMessage && (
+        <div className="fixed top-4 left-4 right-4 z-50 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-4 text-center text-sm">
+          {mobileAuthMessage}
+        </div>
+      )}
+      
       {/* Top UI */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-start p-4 pointer-events-none">
+      <nav className="fixed top-0 left-0 right-0 z-40 flex justify-between items-start p-4 pointer-events-none">
         {/* Left Side: Branding, Deploys, and Hangar */}
         <div className="flex flex-col items-start gap-4 pointer-events-auto">
           <div className="flex items-center gap-3">
