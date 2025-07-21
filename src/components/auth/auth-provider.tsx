@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -14,6 +15,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,27 +26,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Listen to auth state changes
+    // Listen to auth state changes - this is the source of truth
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
       
-      // Ensure profile exists when user signs in
+      // When user signs in, clean the magic link params from the URL
       if (event === 'SIGNED_IN' && session?.user) {
         await ensureProfile(session.user);
+        if (typeof window !== 'undefined') {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+
+      // When user signs out, navigate to home
+      if (event === 'SIGNED_OUT') {
+        router.replace('/');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   // Fallback profile creation if trigger fails
   async function ensureProfile(user: User) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', user.id)
@@ -70,27 +81,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signInWithEmail(email: string) {
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ email }),
       });
-      
-      if (error) {
-        console.error('Sign-in error:', error.message);
-        throw new Error(error.message);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Sign-in API error:', errorData);
+        throw new Error(errorData.error || 'Failed to send sign-in email');
       }
-    } catch (error: any) {
-      console.error('Sign-in error:', error.message);
-      throw new Error(error.message || 'Failed to send sign-in email');
+
+      const data = await response.json();
+      console.log('Sign-in success:', data.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Sign-in error:', message);
+      throw new Error(message || 'Failed to send sign-in email');
     }
   }
 
   async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Sign-out error:', error);
+    try {
+      // Make POST request to sign-out API endpoint
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Sign-out API error:', errorData);
+        throw new Error(errorData.error || 'Sign-out failed');
+      }
+
+      // Clear local state immediately after successful API call
+      setUser(null);
+      setLoading(false);
+      
+      // Redirect to home
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    } catch (err) {
+      console.error('Unexpected sign-out error:', err);
+      // Force clear local state and redirect as fallback
+      setUser(null);
+      setLoading(false);
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
   }
 

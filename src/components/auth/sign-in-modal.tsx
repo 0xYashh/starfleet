@@ -37,9 +37,10 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
     try {
       await signInWithEmail(email);
       setSent(true);
-    } catch (err: any) {
-      console.error('Sign-in error:', err);
-      setError(err.message || 'Failed to send email. Please try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Sign-in error:', message);
+      setError(message || 'Failed to send email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 Magic link sent! Check your email to complete sign-in.
               </p>
               <p className="text-white/60 text-xs">
-                Don't see it? Check your spam folder or try again.
+                {"Don't see it? Check your spam folder or try again."}
               </p>
             </div>
           ) : (
@@ -100,9 +101,10 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 variant="primary"
                 size="md"
                 onClick={handleSend}
-                disabled={loading || !email}
+                isLoading={loading}
+                loadingText="Engaging..."
               >
-                {loading ? 'Engaging...' : 'Engage Warp Drive ✨'}
+                Engage Warp Drive ✨
               </CartoonButton>
             </>
           )}

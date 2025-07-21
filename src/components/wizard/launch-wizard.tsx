@@ -107,7 +107,7 @@ const SpaceshipIdentityStep = ({
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-bold">🚀 Spaceship Identity</h3>
-      <p className="text-sm text-white/70">What's launching into orbit?</p>
+      <p className="text-sm text-white/70">{`What's launching into orbit?`}</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
@@ -158,7 +158,7 @@ const SpaceshipIdentityStep = ({
           )}
         </div>
         {orbitTags.length >= 3 && (
-            <p className="text-xs text-white/50 mt-1">You've reached the 3-tag limit.</p>
+            <p className="text-xs text-white/50 mt-1">{`You've reached the 3-tag limit.`}</p>
         )}
       </div>
     </div>

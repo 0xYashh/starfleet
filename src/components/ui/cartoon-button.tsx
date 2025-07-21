@@ -7,6 +7,7 @@ interface CartoonButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'primary' | 'secondary' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
+  loadingText?: string;
 }
 
 const commonRetroStyles = [
@@ -39,6 +40,7 @@ export const CartoonButton = forwardRef<HTMLButtonElement, CartoonButtonProps>(
     isLoading = false,
     children,
     disabled,
+    loadingText,
     ...props
   }, ref) => {
     return (
@@ -52,13 +54,12 @@ export const CartoonButton = forwardRef<HTMLButtonElement, CartoonButtonProps>(
           // Apply Poppins font to all buttons
           '[font-family:var(--font-poppins)]',
           'cursor-pointer select-none outline-0',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
+          // Remove the opacity reduction for disabled state
+          'disabled:cursor-not-allowed',
           
           // Variant and Size styles
           variantStyles[variant],
           sizeStyles[size],
-          
-          isLoading && 'animate-pulse',
           
           className
         )}
@@ -66,17 +67,19 @@ export const CartoonButton = forwardRef<HTMLButtonElement, CartoonButtonProps>(
       >
         <span className={cn(
           'flex items-center justify-center gap-2 whitespace-nowrap',
-          isLoading && 'opacity-0'
+          isLoading && !loadingText && 'opacity-0'
         )}>
-          {children}
+          {isLoading && loadingText ? loadingText : children}
         </span>
         
-        {isLoading && (
+        {isLoading && !loadingText && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-black/40 border-t-black rounded-full animate-spin" />
           </div>
         )}
       </button>
     );
   }
 ); 
+
+CartoonButton.displayName = 'CartoonButton'; 

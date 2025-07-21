@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starfleet Access Granted</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Barriecito:wght@400&family=Poppins:wght@400;600&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a0033 0%, #1a0f3a 50%, #2d1b69 100%);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-image {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        
+        .logo-text {
+            font-family: 'Barriecito', cursive;
+            font-size: 36px;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            margin: 0;
+        }
+        
+        .subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            color: #b8b8ff;
+            margin-bottom: 30px;
+        }
+        
+        .content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        
+        .message {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            color: #e0e0ff;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #fee6e3;
+            color: #000000;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 16px 40px;
+            border-radius: 12px;
+            border: 2px solid #000000;
+            position: relative;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0 #000000;
+        }
+        
+        .cta-button:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #000000;
+        }
+        
+        .security-note {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            color: #c0c0ff;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            color: #a0a0ff;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars">
+        <div class="star" style="top: 10%; left: 20%; width: 2px; height: 2px; animation-delay: 0s;"></div>
+        <div class="star" style="top: 20%; left: 80%; width: 1px; height: 1px; animation-delay: 1s;"></div>
+        <div class="star" style="top: 30%; left: 40%; width: 1.5px; height: 1.5px; animation-delay: 2s;"></div>
+        <div class="star" style="top: 60%; left: 70%; width: 2px; height: 2px; animation-delay: 0.5s;"></div>
+        <div class="star" style="top: 80%; left: 30%; width: 1px; height: 1px; animation-delay: 1.5s;"></div>
+        <div class="star" style="top: 40%; left: 10%; width: 1.5px; height: 1.5px; animation-delay: 2.5s;"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="https://fq45fpomsg.ufs.sh/f/dTANuJjEj28LX3AmZfwCWmvgNMzlUsfDdZQOwYkKcu9x0JCa" alt="Starfleet Logo" class="logo-image" />
+                <h1 class="logo-text">Starfleet</h1>
+            </div>
+            <div class="subtitle">Command Center Access Portal</div>
+        </div>
+        
+        <div class="content">
+            <h2 class="title">🚀 Warp Drive Engaged</h2>
+            
+            <p class="message">
+                Greetings, Commander!<br><br>
+                Your secure teleportation link has been activated. Click the button below to beam into your Starfleet Command Center and begin your cosmic mission.
+            </p>
+            
+            <a href="{{ .ConfirmationURL }}" class="cta-button">
+                ✨ Teleport to Starfleet ✨
+            </a>
+            
+            <div class="security-note">
+                <strong>🛡️ Security Protocol:</strong><br>
+                This link is valid for 60 minutes and can only be used once. 
+                If you didn't request this access, please ignore this transmission.
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>
+                🌌 Transmitted from Starfleet Command<br>
+                <strong>PxlCorp</strong> • Building the future, one spaceship at a time
+            </p>
+            <p style="margin-top: 15px; font-size: 12px; color: #8080ff;">
+                This is an automated transmission. Please do not reply to this message.
+            </p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -6,17 +6,25 @@ import { SpaceScene } from '@/components/scene/SpaceScene';
 import { useState } from 'react';
 import { LaunchWizard } from '@/components/wizard/launch-wizard';
 import { useAuth } from '@/components/auth/auth-provider';
+import { useCallback } from 'react';
 import { SignInModal } from '@/components/auth/sign-in-modal';
 import Image from 'next/image';
 import { HangarModal } from '@/components/hangar/hangar-modal';
 import { RecentDeploysModal } from '@/components/deploys/recent-deploys-modal';
 
 export default function Home() {
-  const { user, signOut } = useAuth(); // Correctly destructure signOut here
+  const { user, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showHangar, setShowHangar] = useState(false);
   const [showRecentDeploys, setShowRecentDeploys] = useState(false);
+
+  const handleSignOut = useCallback(async () => {
+    setIsSigningOut(true);
+    await signOut();
+    // No need to set isSigningOut back to false, as redirect will happen
+  }, [signOut]);
 
   return (
     <div className="relative min-h-screen text-white">
@@ -51,10 +59,17 @@ export default function Home() {
         {/* Right Side: Auth */}
         <div className="pointer-events-auto">
           {user ? (
-            // Pass the signOut function directly to onClick
-            <CartoonButton variant="danger" size="sm" onClick={signOut}>
-              Sign Out
-            </CartoonButton>
+            <div className="flex flex-col items-end gap-2">
+              <CartoonButton
+                variant="danger"
+                size="sm"
+                onClick={handleSignOut}
+                isLoading={isSigningOut}
+                loadingText="Signing Out..."
+              >
+                Sign Out
+              </CartoonButton>
+            </div>
           ) : (
             <CartoonButton
               variant="primary"

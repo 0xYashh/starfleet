@@ -55,14 +55,14 @@ export function HangarModal({ open, onOpenChange }: HangarModalProps) {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Your Owned Spaceships!</DialogTitle>
           <DialogDescription>
-            A collection of all the ships you've deployed.
+            {`A collection of all the ships you've deployed.`}
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-4">
           {loading ? (
             <p>Loading Hangar...</p>
           ) : ships.length === 0 ? (
-            <p>You haven't deployed any ships yet. Launch one to see it here!</p>
+            <p>{`You haven't deployed any ships yet. Launch one to see it here!`}</p>
           ) : (
             ships.map((ship) => {
               const vehicle = getVehicleById(ship.spaceship_id);

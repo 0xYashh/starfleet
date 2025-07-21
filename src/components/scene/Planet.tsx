@@ -85,7 +85,7 @@ export function Planet({ radius = 3 }: { radius?: number }) {
       {/* Atmosphere shell */}
       <mesh ref={atmosphereRef} scale={1.05}>
         <sphereGeometry args={[radius, 64, 64]} />
-        {/* @ts-ignore – custom ShaderMaterial type */}
+        {/* custom ShaderMaterial type is compatible */}
         <primitive object={atmosphereMaterial} />
       </mesh>
 
