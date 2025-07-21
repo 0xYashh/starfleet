@@ -41,8 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // When user signs out, navigate to home
+      // When user signs out, navigate to home and clean up
       if (event === 'SIGNED_OUT') {
+        console.log('[AUTH] User signed out, redirecting to home');
+        setUser(null);
+        setLoading(false);
+        
+        // Clean URL params and redirect
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.search = ''; // Clear query params
+          window.history.replaceState({}, document.title, url.pathname);
+        }
+        
         router.replace('/');
       }
     });
@@ -106,6 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signOut() {
     try {
+      console.log('[AUTH] Starting sign-out process');
+      
       // Make POST request to sign-out API endpoint
       const response = await fetch('/api/auth/signout', {
         method: 'POST',
@@ -120,22 +133,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.error || 'Sign-out failed');
       }
 
-      // Clear local state immediately after successful API call
-      setUser(null);
-      setLoading(false);
+      console.log('[AUTH] Server sign-out successful');
       
-      // Redirect to home
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      }
+      // The auth state listener will handle the redirect automatically
+      // when it detects the SIGNED_OUT event
+      
     } catch (err) {
       console.error('Unexpected sign-out error:', err);
       // Force clear local state and redirect as fallback
       setUser(null);
       setLoading(false);
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      }
+      router.replace('/');
     }
   }
 
