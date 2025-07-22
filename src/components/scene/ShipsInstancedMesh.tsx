@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { InstancedMesh, Object3D, DynamicDrawUsage, Group, Vector3 } from 'three';
+import { useFrame, useThree } from '@react-three/fiber';
+import { InstancedMesh, Object3D, DynamicDrawUsage, Group, Vector3, Raycaster, Vector2 } from 'three';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 import { supabase } from '@/lib/supabase/client';
 import type { Ship } from '@/lib/types/ship';
@@ -18,10 +18,13 @@ const allAssets = [...getFreeVehicles(), ...getPaidVehicles()];
 const SCALE = 0.01; // Final scale adjustment for a more distant view
 
 export function ShipsInstancedMesh() {
+  const { camera, scene } = useThree();
   const meshGroupRef = useRef<Group>(null);
   const labelGroupRef = useRef<Group>(null);
   const vehicleMapRef = useRef<Map<string, InstancedEntry>>(new Map());
-  const { ships, setShips, addShip } = useShipsStore();
+  const { ships, setShips, addShip, setSelectedShip } = useShipsStore();
+  const raycaster = useRef(new Raycaster());
+  const mouse = useRef(new Vector2());
 
   // Initial data fetch and real-time subscription
   useEffect(() => {
@@ -72,6 +75,7 @@ export function ShipsInstancedMesh() {
       const { mesh } = entry;
       const currentShips = shipsByVehicle[vehicleId] || [];
       mesh.count = currentShips.length;
+      entry.shipIds = currentShips.map(s => s.id); // Store ship IDs for raycasting
 
       currentShips.forEach((ship, i) => {
         const theta = ship.phase + ship.angular_speed * elapsedTime;
@@ -118,6 +122,52 @@ export function ShipsInstancedMesh() {
         });
     }
   });
+
+  const handlePointerMove = (event: PointerEvent) => {
+    mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.current.setFromCamera(mouse.current, camera);
+    const intersects = raycaster.current.intersectObjects(meshGroupRef.current?.children || [], false);
+    
+    document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'grab';
+  };
+
+  const handleClick = (event: MouseEvent) => {
+    // We stop propagation to prevent the label's click handler from firing too
+    event.stopPropagation();
+    
+    raycaster.current.setFromCamera(mouse.current, camera);
+    const intersects = raycaster.current.intersectObjects(meshGroupRef.current?.children || [], false);
+
+    if (intersects.length > 0) {
+      const { instanceId, object } = intersects[0];
+      const mesh = object as InstancedMesh;
+      
+      const entry = Array.from(vehicleMapRef.current.values()).find(e => e.mesh === mesh);
+      if (entry && instanceId !== undefined) {
+        const shipId = entry.shipIds[instanceId];
+        const selected = ships.find(s => s.id === shipId);
+        if (selected) {
+          setSelectedShip(selected);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      canvas.addEventListener('pointermove', handlePointerMove);
+      canvas.addEventListener('click', handleClick);
+    }
+    return () => {
+      if (canvas) {
+        canvas.removeEventListener('pointermove', handlePointerMove);
+        canvas.removeEventListener('click', handleClick);
+      }
+    };
+  }, [camera, ships]);
 
   return (
     <>

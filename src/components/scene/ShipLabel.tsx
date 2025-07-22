@@ -16,22 +16,23 @@ export function ShipLabel({ ship }: ShipLabelProps) {
 
   if (!vehicle) return null;
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevents the click from passing through to the canvas
     setSelectedShip(ship);
   };
 
   return (
     <Html
       as="div"
-      position={[0, 2, 0]}
+      position={[0, 1.2, 0]} // Moved closer to the ship
       center
       distanceFactor={8}
       occlude
-      className="select-none"
+      className="select-none pointer-events-none" // Allow clicks to pass through to the ship
     >
       <div
         onClick={handleClick}
-        className="bg-black/60 backdrop-blur-md rounded-lg px-3 py-2 text-white text-xs whitespace-nowrap shadow-xl pointer-events-auto cursor-pointer transition-transform hover:scale-105 flex items-center gap-2"
+        className="bg-black/30 backdrop-blur-xl rounded-lg px-3 py-2 text-white text-xs whitespace-nowrap shadow-xl pointer-events-auto cursor-pointer transition-transform hover:scale-105 flex items-center gap-2"
       >
         {ship.icon_url && (
           <Image
