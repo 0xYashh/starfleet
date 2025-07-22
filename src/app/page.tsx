@@ -32,6 +32,11 @@ function HomeContent() {
     }
   }, [searchParams]);
 
+  // Reset sign-out loading state when user changes
+  useEffect(() => {
+    setIsSigningOut(false);
+  }, [user]);
+
   const handleSignOut = useCallback(async () => {
     setIsSigningOut(true);
     await signOut();
