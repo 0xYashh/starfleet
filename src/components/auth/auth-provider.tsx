@@ -9,6 +9,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   signInWithEmail: (email: string) => Promise<void>;
+  verifyOtp: (email: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -113,6 +114,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function verifyOtp(email: string, token: string) {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+
+      if (error) {
+        console.error('OTP verification error:', error);
+        throw new Error(error.message || 'Invalid or expired OTP');
+      }
+
+      // Auth state listener will handle session update
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('OTP verification error:', message);
+      throw new Error(message || 'Failed to verify OTP');
+    }
+  }
+
   async function signOut() {
     try {
       console.log('[AUTH] Starting sign-out process');
@@ -153,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     signInWithEmail,
+    verifyOtp,
     signOut,
   };
 

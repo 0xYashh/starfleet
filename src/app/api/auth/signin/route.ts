@@ -21,22 +21,13 @@ export async function POST(req: NextRequest) {
     const { email } = parsed.data;
     const supabase = await createClient();
     
-    console.log(`[AUTH] Magic link requested for: ${email}`);
+    console.log(`[AUTH] OTP sign-in requested for: ${email}`);
     
-    const origin = req.nextUrl.origin;
-    const redirectTo = `${origin}/api/auth/callback`;
-    
-    // Disable PKCE for magic links to fix mobile browser switching issues
-    // Magic links are already secure via email verification
+    // Send an email OTP code (no magic link)
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectTo,
         shouldCreateUser: true,
-        // Disable PKCE to prevent mobile browser session isolation issues
-        data: {
-          flow_type: 'magic_link'
-        }
       },
     });
     
@@ -58,11 +49,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[AUTH] Magic link sent successfully to: ${email}`);
+    console.log(`[AUTH] OTP sent successfully to: ${email}`);
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Magic link sent successfully' 
+      message: 'OTP sent successfully' 
     });
   } catch (err) {
     console.error('[AUTH] Unexpected error:', err);
