@@ -2,13 +2,14 @@
 
 import { Planet } from './Planet';
 import { Starfield } from './Starfield';
+import { ShipsInstancedMesh } from './ShipsInstancedMesh';
 
 export function Environment() {
   return (
     <>
       <Starfield />
       <Planet />
-      {/* Ships layers will be added later */}
+      <ShipsInstancedMesh />
     </>
   );
 } 

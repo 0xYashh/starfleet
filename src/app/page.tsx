@@ -9,8 +9,10 @@ import { useCallback, useEffect } from 'react';
 import { SignInModal } from '@/components/auth/sign-in-modal';
 import Image from 'next/image';
 import { HangarModal } from '@/components/hangar/hangar-modal';
-import { RecentDeploysModal } from '@/components/deploys/recent-deploys-modal';
+import { VoyagersModal } from '@/components/deploys/voyagers-modal';
 import { useSearchParams } from 'next/navigation';
+import { ProfileModal } from '@/components/ship/profile-modal';
+import type { Ship } from '@/lib/types/ship';
 
 function HomeContent() {
   const { user, signOut } = useAuth();
@@ -19,7 +21,8 @@ function HomeContent() {
   const [showWizard, setShowWizard] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showHangar, setShowHangar] = useState(false);
-  const [showRecentDeploys, setShowRecentDeploys] = useState(false);
+  const [showVoyagers, setShowVoyagers] = useState(false);
+  const [initialWizardData, setInitialWizardData] = useState<Ship | null>(null);
 
   // Simple auth success handling
   useEffect(() => {
@@ -41,6 +44,11 @@ function HomeContent() {
     setIsSigningOut(true);
     await signOut();
   }, [signOut]);
+
+  const handleHangarSelect = (ship: Ship) => {
+    setInitialWizardData(ship);
+    setShowWizard(true);
+  };
 
   return (
     <div className="relative min-h-screen text-white">
@@ -81,9 +89,9 @@ function HomeContent() {
             <CartoonButton
               variant="secondary"
               size="sm"
-              onClick={() => setShowRecentDeploys(true)}
+              onClick={() => setShowVoyagers(true)}
             >
-              Recent Deploys
+              Voyagers
             </CartoonButton>
             {user && (
               <CartoonButton
@@ -135,10 +143,19 @@ function HomeContent() {
       </div>
 
       {/* Modals */}
-      <LaunchWizard open={showWizard} onOpenChange={setShowWizard} />
+      <LaunchWizard 
+        open={showWizard} 
+        onOpenChange={setShowWizard} 
+        initialData={initialWizardData}
+      />
       <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />
-      <HangarModal open={showHangar} onOpenChange={setShowHangar} />
-      <RecentDeploysModal open={showRecentDeploys} onOpenChange={setShowRecentDeploys} />
+      <HangarModal 
+        open={showHangar} 
+        onOpenChange={setShowHangar}
+        onSelectShip={handleHangarSelect}
+      />
+      <VoyagersModal open={showVoyagers} onOpenChange={setShowVoyagers} />
+      <ProfileModal />
     </div>
   );
 }

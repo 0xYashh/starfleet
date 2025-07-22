@@ -15,6 +15,10 @@ import { getFreeVehicles, getPaidVehicles, getVehicleById } from '@/lib/data/spa
 import { VehiclePreview } from './vehicle-preview';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAuth } from '../auth/auth-provider';
+import { UploadButton } from '@/lib/uploadthing';
+import Image from 'next/image';
+import type { Ship } from '@/lib/types/ship';
 
 // --- Constants ---
 const ROLES = ['Founder','Developer','Designer','Artist','Explorer','Creator','Builder'];
@@ -23,6 +27,7 @@ const ROLES = ['Founder','Developer','Designer','Artist','Explorer','Creator','B
 interface LaunchWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialData?: Ship | null;
 }
 
 // --- Step 1: Commander Profile ---
@@ -165,27 +170,63 @@ const SpaceshipIdentityStep = ({
 };
 
 // --- Step 3: Visual Deck ---
-const VisualDeckStep = ({
-  setIconFile,
-  setCoverFile,
-}: {
-  setIconFile: Dispatch<SetStateAction<File | null>>;
-  setCoverFile: Dispatch<SetStateAction<File | null>>;
-}) => (
-  <div className="space-y-4">
-    <h3 className="text-xl font-bold">🖼️ Visual Deck</h3>
-    <p className="text-sm text-white/70">Make your ship identifiable in the fleet.</p>
-    
-    <div>
-      <label className="text-sm font-medium">App Icon / Emblem</label>
-      <input type="file" accept="image/*" onChange={(e) => setIconFile(e.target.files?.[0] ?? null)} className="mt-1 file-input-glass" />
+const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
+  setIconFileUrl: Dispatch<SetStateAction<string | null>>;
+  setCoverFileUrl: Dispatch<SetStateAction<string | null>>;
+}) => {
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-6">
+      <div className="p-4 rounded-lg bg-black/20 border border-white/20">
+        <label className="text-lg font-bold">🚀 Ship Icon</label>
+        <p className="text-sm text-white/70 mb-3">A square 1:1 image, max 1MB.</p>
+        <div className="flex items-center gap-4">
+          <div className="w-24 h-24 rounded-md bg-black/20 flex items-center justify-center">
+            {iconUrl ? <Image src={iconUrl} alt="Icon preview" width={96} height={96} className="rounded-md object-cover" /> : <span className="text-white/40 text-xs">Preview</span>}
+          </div>
+          <UploadButton
+            endpoint="shipIcon"
+            onClientUploadComplete={(res) => {
+              if (res && res[0]) {
+                const url = res[0].url;
+                setIconUrl(url);
+                setIconFileUrl(url);
+              }
+            }}
+            onUploadError={(error: Error) => {
+              alert(`ERROR! ${error.message}`);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="p-4 rounded-lg bg-black/20 border border-white/20">
+        <label className="text-lg font-bold">🖼️ Cover Image</label>
+        <p className="text-sm text-white/70 mb-3">A landscape 16:9 image, max 4MB.</p>
+        <div className="flex items-center gap-4">
+          <div className="w-48 h-27 rounded-md bg-black/20 flex items-center justify-center">
+             {coverUrl ? <Image src={coverUrl} alt="Cover preview" width={192} height={108} className="rounded-md object-cover" /> : <span className="text-white/40 text-xs">Preview</span>}
+          </div>
+          <UploadButton
+            endpoint="shipCover"
+            onClientUploadComplete={(res) => {
+              if (res && res[0]) {
+                const url = res[0].url;
+                setCoverUrl(url);
+                setCoverFileUrl(url);
+              }
+            }}
+            onUploadError={(error: Error) => {
+              alert(`ERROR! ${error.message}`);
+            }}
+          />
+        </div>
+      </div>
     </div>
-    <div>
-      <label className="text-sm font-medium">Cover Image / Screenshot</label>
-      <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} className="mt-1 file-input-glass" />
-    </div>
-  </div>
-);
+  );
+};
 
 // --- Step 4: Choose Vehicle ---
 const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
@@ -242,9 +283,12 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
 };
 
 
-export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
+export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // --- Form State ---
   const [commanderName, setCommanderName] = useState('');
@@ -259,9 +303,22 @@ export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
   const [missionBrief, setMissionBrief] = useState('');
   const [status, setStatus] = useState<'Building' | 'Launched'>('Launched');
   const [orbitTags, setOrbitTags] = useState<string[]>([]);
-  const [iconFile, setIconFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [iconFileUrl, setIconFileUrl] = useState<string | null>(null);
+  const [coverFileUrl, setCoverFileUrl] = useState<string | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialData) {
+      setShipName(initialData.name || '');
+      setMissionTagline(initialData.tagline || '');
+      setMissionBrief(initialData.description || '');
+      setWebsiteUrl(initialData.website_url || '');
+      setOrbitTags(initialData.orbit_tags || []);
+      setSelectedVehicleId(initialData.spaceship_id || null);
+      setIconFileUrl(initialData.icon_url || null);
+      setCoverFileUrl(initialData.screenshot_url || null);
+    }
+  }, [initialData, open]); // Re-run when modal opens with new data
 
   // --- Handlers ---
   function handleRoleChange(role: string) {
@@ -270,24 +327,68 @@ export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-    // On step 3, we don't submit yet, just move to the vehicle selection
-    if (step === 3) {
-      changeStep(4);
+    if (!selectedVehicleId) {
+      setError("Please select a vehicle before deploying.");
       return;
     }
+    
+    setIsLoading(true);
+    setError(null);
 
     const finalRoles = [...selectedRoles];
     if (otherRole) finalRoles.push(otherRole);
     
-    console.log({
-      commanderName, roles: finalRoles, websiteUrl, xHandle, instagramHandle, youtubeUrl,
-      shipName, missionTagline, missionBrief, status, orbitTags,
-      iconFile, coverFile, selectedVehicleId,
-    });
-    // TODO: Final submission logic (payment or direct launch)
+    const payload = {
+      commanderName, 
+      roles: finalRoles, 
+      websiteUrl, 
+      xHandle, 
+      instagramHandle, 
+      youtubeUrl,
+      shipName, 
+      missionTagline, 
+      missionBrief, 
+      status, 
+      orbitTags,
+      iconUrl: iconFileUrl,
+      coverUrl: coverFileUrl,
+      selectedVehicleId,
+    };
+
+    try {
+      const response = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shipName,
+          spaceshipId: selectedVehicleId,
+          websiteUrl,
+          tagline: missionTagline,
+          description: missionBrief,
+          orbitTags,
+          iconUrl: iconFileUrl,
+          screenshotUrl: coverFileUrl,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Something went wrong');
+      }
+
+      // Success! Close the modal.
+      onOpenChange(false);
+      // Optionally, you could show a success toast here.
+      
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Deployment failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function changeStep(newStep: number) {
@@ -296,15 +397,15 @@ export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
   }
 
   const getButtonText = () => {
+    if (isLoading) return 'Deploying...';
     if (!selectedVehicleId) {
       return 'Select a Vehicle';
     }
     const vehicle = getVehicleById(selectedVehicleId);
-    // This handles the case where the vehicle might not be found, though it shouldn't happen.
     if (!vehicle) {
         return 'Deploy';
     }
-    return vehicle.price === 0 ? 'Deploy for Free' : 'Proceed to Payment';
+    return vehicle.price === 0 ? 'Deploy for Free' : 'Proceed to Payment'; // Future-proofed
   };
 
   return (
@@ -321,6 +422,13 @@ export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
             </DialogDescription>
           </DialogHeader>
           
+          {error && (
+            <div className="bg-red-500/10 text-red-400 border border-red-500/20 p-3 rounded-md my-4 text-sm">
+              <p className="font-bold">Error</p>
+              <p>{error}</p>
+            </div>
+          )}
+
           <div className="flex-grow overflow-hidden relative py-6">
             <div
               key={step}
@@ -333,23 +441,23 @@ export function LaunchWizard({ open, onOpenChange }: LaunchWizardProps) {
             >
               {step === 1 && <CommanderProfileStep {...{ commanderName, setCommanderName, selectedRoles, handleRoleChange, otherRole, setOtherRole, websiteUrl, setWebsiteUrl, xHandle, setXHandle, instagramHandle, setInstagramHandle, youtubeUrl, setYoutubeUrl }} />}
               {step === 2 && <SpaceshipIdentityStep {...{ shipName, setShipName, missionTagline, setMissionTagline, missionBrief, setMissionBrief, status, setStatus, orbitTags, setOrbitTags }} />}
-              {step === 3 && <VisualDeckStep {...{ setIconFile, setCoverFile }} />}
+              {step === 3 && <VisualDeckStep setIconFileUrl={setIconFileUrl} setCoverFileUrl={setCoverFileUrl} />}
               {step === 4 && <ChooseVehicleStep {...{ selectedVehicleId, setSelectedVehicleId }} />}
             </div>
           </div>
 
           <DialogFooter className="flex-shrink-0">
             {step > 1 && (
-              <CartoonButton variant="secondary" size="md" onClick={() => changeStep(step - 1)} type="button">
+              <CartoonButton variant="secondary" size="md" onClick={() => changeStep(step - 1)} type="button" disabled={isLoading}>
                 Back
               </CartoonButton>
             )}
             {step < 4 ? (
-              <CartoonButton variant="primary" size="md" onClick={() => changeStep(step + 1)} type="button">
+              <CartoonButton variant="primary" size="md" onClick={() => changeStep(step + 1)} type="button" disabled={isLoading}>
                 Next ➔
               </CartoonButton>
             ) : (
-              <CartoonButton variant="primary" size="md" type="submit" disabled={!selectedVehicleId}>
+              <CartoonButton variant="primary" size="md" type="submit" disabled={!selectedVehicleId || isLoading}>
                 {getButtonText()}
               </CartoonButton>
             )}

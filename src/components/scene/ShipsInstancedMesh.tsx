@@ -1,31 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { InstancedMesh, Object3D, DynamicDrawUsage, Group } from 'three';
-import { preloadVehicles } from '@/lib/three/load-vehicle';
-import { getFreeVehicles, getPaidVehicles } from '@/lib/data/spaceships';
-import { getOrbitPosition } from '@/lib/three/orbit-utils';
+import { InstancedMesh, Object3D, DynamicDrawUsage, Group, Vector3 } from 'three';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 import { supabase } from '@/lib/supabase/client';
 import type { Ship } from '@/lib/types/ship';
-import type { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
+import { getFreeVehicles, getPaidVehicles, getVehicleById } from '@/lib/data/spaceships';
+import { preloadVehicles, InstancedEntry } from '@/lib/three/load-vehicle';
+import { ShipLabel } from './ShipLabel';
+import { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
+import { shipPositions } from '@/lib/three/ship-positions';
 
-type InstancedEntry = { mesh: InstancedMesh; shipIds: string[] };
-
-const SCALE = 0.06;
 const tempObject = new Object3D();
+const upVector = new Vector3(0, 1, 0);
 const allAssets = [...getFreeVehicles(), ...getPaidVehicles()];
+const SCALE = 0.01; // Final scale adjustment for a more distant view
 
 export function ShipsInstancedMesh() {
-  const groupRef = useRef<Group>(null);
+  const meshGroupRef = useRef<Group>(null);
+  const labelGroupRef = useRef<Group>(null);
   const vehicleMapRef = useRef<Map<string, InstancedEntry>>(new Map());
   const { ships, setShips, addShip } = useShipsStore();
 
+  // Initial data fetch and real-time subscription
   useEffect(() => {
-    supabase.from('ships').select('*').then(({ data }) => {
+    async function fetchInitialShips() {
+      const { data } = await supabase.from('ships').select('*');
       if (data) setShips(data as Ship[]);
-    });
+    }
+    fetchInitialShips();
 
     const channel = supabase
       .channel('public:ships')
@@ -39,20 +43,22 @@ export function ShipsInstancedMesh() {
     };
   }, [setShips, addShip]);
 
+  // Preload all vehicle models and create instanced meshes
   useEffect(() => {
     preloadVehicles(allAssets).then((preloaded) => {
       preloaded.forEach(({ geometry, material }, id) => {
-        const mesh = new InstancedMesh(geometry, material, 200);
-        mesh.count = 0; // Start with zero instances, preventing the bug
+        const mesh = new InstancedMesh(geometry, material, 500);
         mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+        mesh.count = 0;
         vehicleMapRef.current.set(id, { mesh, shipIds: [] });
-        groupRef.current?.add(mesh);
+        meshGroupRef.current?.add(mesh);
       });
     });
   }, []);
-
+  
+  // Per-frame orbit calculation
   useFrame(({ clock }) => {
-    const elapsed = clock.getElapsedTime();
+    const elapsedTime = clock.getElapsedTime();
     const shipsByVehicle: Record<string, Ship[]> = {};
 
     for (const ship of ships) {
@@ -61,29 +67,68 @@ export function ShipsInstancedMesh() {
       }
       shipsByVehicle[ship.spaceship_id].push(ship);
     }
-
+    
     vehicleMapRef.current.forEach((entry, vehicleId) => {
-      const targetShips = shipsByVehicle[vehicleId] || [];
-      entry.mesh.count = targetShips.length; // Set visibility based on data
-      entry.shipIds = targetShips.map(s => s.id);
+      const { mesh } = entry;
+      const currentShips = shipsByVehicle[vehicleId] || [];
+      mesh.count = currentShips.length;
 
-      targetShips.forEach((ship, i) => {
-        const radius = ship.orbit_radius ?? (ship.price === 0 ? 4.5 : 7);
-        const inclination = ship.inclination ?? 0.25;
-        const phase = ship.phase ?? 0;
-        const speed = ship.angular_speed ?? 0.25 / radius;
+      currentShips.forEach((ship, i) => {
+        const theta = ship.phase + ship.angular_speed * elapsedTime;
+        const x = ship.orbit_radius * Math.cos(theta);
+        const y = ship.orbit_radius * Math.sin(theta);
         
-        const [x, y, z] = getOrbitPosition(radius, inclination, phase, elapsed, speed);
+        tempObject.position.set(x, y * Math.cos(ship.inclination), y * Math.sin(ship.inclination));
         
-        tempObject.position.set(x, y, z);
-        tempObject.rotation.y = phase + elapsed * speed + Math.PI / 2;
+        // Simplified orientation: Look ahead but maintain a stable world "up"
+        const lookAheadTime = 0.01;
+        const nextTheta = ship.phase + ship.angular_speed * (elapsedTime + lookAheadTime);
+        const nextX = ship.orbit_radius * Math.cos(nextTheta);
+        const nextY = ship.orbit_radius * Math.sin(nextTheta);
+        const lookAtPosition = new Vector3(
+          nextX,
+          nextY * Math.cos(ship.inclination),
+          nextY * Math.sin(ship.inclination)
+        );
+        
+        tempObject.up.set(0, 1, 0); // Explicitly set world up vector
+        tempObject.lookAt(lookAtPosition);
+        
         tempObject.scale.setScalar(SCALE);
         tempObject.updateMatrix();
-        entry.mesh.setMatrixAt(i, tempObject.matrix);
+        mesh.setMatrixAt(i, tempObject.matrix);
+
+        // Write the final world position to the global map for the camera to use
+        shipPositions.set(ship.id, tempObject.position.clone());
       });
-      entry.mesh.instanceMatrix.needsUpdate = true;
+
+      mesh.instanceMatrix.needsUpdate = true;
     });
+
+    // Update label positions imperatively
+    if (labelGroupRef.current) {
+        ships.forEach((ship, i) => {
+            const label = labelGroupRef.current?.children[i] as Group;
+            if (label) {
+                const theta = ship.phase + ship.angular_speed * elapsedTime;
+                const x = ship.orbit_radius * Math.cos(theta);
+                const y = ship.orbit_radius * Math.sin(theta);
+                label.position.set(x, y * Math.cos(ship.inclination), y * Math.sin(ship.inclination));
+            }
+        });
+    }
   });
 
-  return <group ref={groupRef} />;
+  return (
+    <>
+      <group ref={meshGroupRef} />
+      <group ref={labelGroupRef}>
+        {ships.map(ship => (
+          <group key={ship.id}>
+            <ShipLabel ship={ship} />
+          </group>
+        ))}
+      </group>
+    </>
+  );
 } 

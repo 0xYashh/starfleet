@@ -2,6 +2,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import * as THREE from 'three';
 import type { VehicleAsset } from '@/lib/data/spaceships';
+import type { GLTF } from 'three-stdlib';
 
 // Initialize GLTF loader with Draco compression support
 const gltfLoader = new GLTFLoader();
@@ -54,24 +55,29 @@ export async function preloadVehicleForInstancing(asset: VehicleAsset) {
   };
 }
 
-/**
- * Load multiple vehicles for instancing
- * @param assets Array of vehicle assets to preload
- * @returns Promise resolving to map of preloaded vehicles
- */
-export async function preloadVehicles(assets: VehicleAsset[]) {
-  const preloaded = new Map<string, Awaited<ReturnType<typeof preloadVehicleForInstancing>>>();
-  
-  await Promise.all(
-    assets.map(async (asset) => {
-      try {
-        const preloadedAsset = await preloadVehicleForInstancing(asset);
-        preloaded.set(asset.id, preloadedAsset);
-      } catch (error) {
-        console.error(`Failed to preload vehicle ${asset.id}:`, error);
-      }
-    })
-  );
-  
+export interface InstancedEntry {
+  mesh: THREE.InstancedMesh;
+  shipIds: string[];
+}
+
+export async function preloadVehicles(assets: VehicleAsset[]): Promise<Map<string, { geometry: THREE.BufferGeometry, material: THREE.Material | THREE.Material[] }>> {
+  const loader = new GLTFLoader();
+  const preloaded = new Map();
+
+  for (const asset of assets) {
+    try {
+      const gltf = (await loader.loadAsync(asset.localPath)) as GLTF;
+      gltf.scene.traverse(obj => {
+        if ((obj as THREE.Mesh).isMesh) {
+          preloaded.set(asset.id, {
+            geometry: (obj as THREE.Mesh).geometry,
+            material: (obj as THREE.Mesh).material
+          });
+        }
+      });
+    } catch (e) {
+      console.error(`Failed to preload vehicle ${asset.id}:`, e);
+    }
+  }
   return preloaded;
 } 

@@ -5,13 +5,14 @@ export interface Ship {
   name: string;
   tagline: string | null;
   description: string | null;
-  icon_url: string | null;
-  screenshot_url: string | null;
+  orbit_tags: string[];
   spaceship_id: string;
-  orbit_radius: number | null;
-  inclination: number | null;
-  phase: number | null;
-  angular_speed: number | null;
+  orbit_radius: number;
+  inclination: number;
+  phase: number;
+  angular_speed: number;
   price: number;
   created_at: string;
+  icon_url: string | null;
+  screenshot_url: string | null;
 } 
