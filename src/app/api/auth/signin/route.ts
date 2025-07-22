@@ -23,8 +23,17 @@ export async function POST(req: NextRequest) {
     
     console.log(`[AUTH] OTP sign-in requested for: ${email}`);
     
+<<<<<<< HEAD
     // Send an email OTP code (no magic link)
     const { data, error } = await supabase.auth.signInWithOtp({
+=======
+    const origin = req.nextUrl.origin;
+    const redirectTo = `${origin}/api/auth/callback`;
+    
+    // Disable PKCE for magic links to fix mobile browser switching issues
+    // Magic links are already secure via email verification
+    const { error } = await supabase.auth.signInWithOtp({
+>>>>>>> 74373bd210e15d283c6ab763a51434ad2692ff63
       email,
       options: {
         shouldCreateUser: true,
