@@ -47,33 +47,58 @@ function HomeContent() {
       <SpaceScene />
       
       {/* Top UI */}
-      <nav className="fixed top-0 left-0 right-0 z-40 flex justify-between items-start p-4 pointer-events-none">
+      <nav className="fixed top-0 left-0 right-0 z-40 flex flex-col md:flex-row md:justify-between md:items-start p-4 pointer-events-none">
         {/* Left Side: Branding, Deploys, and Hangar */}
-        <div className="flex flex-col items-start gap-4 pointer-events-auto">
-          <div className="flex items-center gap-3">
-            <Image src="/icon/starfleet.svg" alt="Starfleet Logo" width={40} height={40} />
-            <h1 className="text-3xl [font-family:var(--font-barriecito)] pt-1">Starfleet</h1>
+        <div className="flex flex-col items-start gap-4 pointer-events-auto w-full md:w-auto">
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="flex items-center gap-3">
+              <Image src="/icon/starfleet.svg" alt="Starfleet Logo" width={40} height={40} />
+              <h1 className="text-3xl [font-family:var(--font-barriecito)] pt-1">Starfleet</h1>
+            </div>
+            <div className="md:hidden">
+              {user ? (
+                <CartoonButton
+                  variant="danger"
+                  size="sm"
+                  onClick={handleSignOut}
+                  isLoading={isSigningOut}
+                  loadingText="Signing Out..."
+                >
+                  Sign Out
+                </CartoonButton>
+              ) : (
+                <CartoonButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowSignIn(true)}
+                >
+                  Sign In
+                </CartoonButton>
+              )}
+            </div>
           </div>
-          <CartoonButton
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowRecentDeploys(true)}
-          >
-            Recent Deploys
-          </CartoonButton>
-          {user && (
+          <div className="flex items-center gap-2">
             <CartoonButton
               variant="secondary"
               size="sm"
-              onClick={() => setShowHangar(true)}
+              onClick={() => setShowRecentDeploys(true)}
             >
-              Hangar
+              Recent Deploys
             </CartoonButton>
-          )}
+            {user && (
+              <CartoonButton
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowHangar(true)}
+              >
+                Hangar
+              </CartoonButton>
+            )}
+          </div>
         </div>
         
-        {/* Right Side: Auth */}
-        <div className="pointer-events-auto">
+        {/* Right Side: Auth (Desktop only) */}
+        <div className="pointer-events-auto hidden md:block">
           {user ? (
             <div className="flex flex-col items-end gap-2">
               <CartoonButton

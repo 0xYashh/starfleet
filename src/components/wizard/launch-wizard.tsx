@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -211,14 +211,15 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
           ))}
         </div>
       </div>
+      
       <div>
         <h3 className="text-xl font-bold">🚀 Paid Spaceships ($5)</h3>
         <p className="text-sm text-white/70">Soar into the higher orbit space layer.</p>
         <div className="relative group">
           <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex">
+             <div className="flex">
               {paidVehicles.map(vehicle => (
-                <div key={vehicle.id} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 p-2">
+                 <div key={vehicle.id} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 p-2">
                   <div onClick={() => setSelectedVehicleId(vehicle.id)} className={cn("p-2 rounded-lg border-2 cursor-pointer transition-colors", selectedVehicleId === vehicle.id ? 'border-blue-400 bg-blue-500/20' : 'border-transparent hover:bg-white/10')}>
                     <VehiclePreview asset={vehicle} />
                     <p className="font-semibold mt-2 text-center">{vehicle.label}</p>
@@ -228,12 +229,12 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
               ))}
             </div>
           </div>
-          <button onClick={() => emblaApi?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
-            <ChevronLeft size={24} />
-          </button>
-          <button onClick={() => emblaApi?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
-            <ChevronRight size={24} />
-          </button>
+           <button onClick={() => emblaApi?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
+             <ChevronLeft size={24} />
+           </button>
+           <button onClick={() => emblaApi?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
+             <ChevronRight size={24} />
+           </button>
         </div>
       </div>
     </div>

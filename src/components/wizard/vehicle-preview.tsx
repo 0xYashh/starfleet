@@ -11,41 +11,38 @@ function Model({ asset, isMobile = false }: { asset: VehicleAsset; isMobile?: bo
   const [loadError, setLoadError] = useState(false);
   const ref = useRef<THREE.Group>(null);
   
-  // Always call useGLTF
   const gltfResult = useGLTF(modelUrl);
   
-  // Always call useFrame
   useFrame((_, delta) => {
     if (ref.current && gltfResult?.scene) {
       ref.current.rotation.y += delta * (isMobile ? 0.3 : 0.5);
     }
   });
 
-  // Always call useEffect for scaling
   useEffect(() => {
-    if (ref.current && gltfResult?.scene) {
-      try {
-        const box = new THREE.Box3().setFromObject(gltfResult.scene);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDimension = Math.max(size.x, size.y, size.z);
-        
-        // Normalize to a consistent size (target size of ~2 units)
-        const targetSize = 2;
-        const scale = targetSize / maxDimension;
-        const finalScale = Math.min(Math.max(scale, 0.8), 1.5); // Clamp between 0.8 and 1.5
-        
-        ref.current.scale.setScalar(finalScale);
-        
-        // Center the model
-        const center = box.getCenter(new THREE.Vector3());
-        ref.current.position.sub(center.multiplyScalar(finalScale));
-      } catch (error) {
-        console.warn('Error scaling model:', error);
-      }
+    if (!ref.current || !gltfResult?.scene) return;
+    try {
+      const scene = gltfResult.scene;
+      const box = new THREE.Box3().setFromObject(scene);
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      const radius = sphere.radius;
+
+      const cameraDistance = 4;
+      const fov = THREE.MathUtils.degToRad(35);
+      const viewportHeightAtDist = 2 * cameraDistance * Math.tan(fov / 2);
+
+      const targetSize = (viewportHeightAtDist * 0.8) / 2;
+      let scale = targetSize / radius;
+      scale = THREE.MathUtils.clamp(scale, 0.2, 2.5);
+      ref.current.scale.setScalar(scale);
+
+      const center = sphere.center;
+      ref.current.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    } catch (err) {
+      console.warn('VehiclePreview auto-fit failed:', err);
     }
   }, [gltfResult?.scene]);
 
-  // Handle fallback URL switching
   useEffect(() => {
     if (!gltfResult?.scene && !loadError && modelUrl === asset.remoteUrl) {
       setLoadError(true);
@@ -53,7 +50,6 @@ function Model({ asset, isMobile = false }: { asset: VehicleAsset; isMobile?: bo
     }
   }, [gltfResult?.scene, loadError, modelUrl, asset.remoteUrl, asset.localPath]);
 
-  // If no scene loaded, show placeholder
   if (!gltfResult?.scene) {
     return (
       <mesh>
@@ -68,7 +64,7 @@ function Model({ asset, isMobile = false }: { asset: VehicleAsset; isMobile?: bo
 
 function FallbackPreview({ asset }: { asset: VehicleAsset }) {
   return (
-    <div className="w-full h-48 rounded-md bg-black/20 cursor-pointer flex items-center justify-center">
+    <div className="w-full h-56 rounded-md bg-black/20 cursor-pointer flex items-center justify-center">
       <div className="text-center text-white/60">
         <div className="text-4xl mb-2">🚀</div>
         <div className="text-sm">{asset.label}</div>
@@ -85,60 +81,52 @@ export function VehiclePreview({ asset }: { asset: VehicleAsset }) {
 
   useEffect(() => {
     setMounted(true);
-    // Simple mobile detection
     const userAgent = navigator.userAgent;
     const mobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
     setIsMobile(mobile);
   }, []);
 
-  // Show loading state until mounted (prevents hydration issues)
   if (!mounted) {
+    return <div className="w-full h-56 rounded-md bg-black/20 animate-pulse" />;
+  }
+  
+  // On mobile, render a lightweight static image to prevent crashes.
+  if (isMobile) {
     return (
-      <div className="w-full h-48 rounded-md bg-black/20 animate-pulse" />
+      <div className="w-full h-56 rounded-md bg-black/20 cursor-pointer">
+        <img 
+          src={asset.previewPng || '/icon/starfleet.svg'} 
+          alt={asset.label} 
+          className="w-full h-full object-contain"
+        />
+      </div>
     );
   }
 
-  // Error fallback
+  // On desktop, render the full 3D interactive preview.
   if (error) {
     return <FallbackPreview asset={asset} />;
   }
 
   return (
-    <div className="w-full h-48 rounded-md bg-black/20 cursor-pointer">
+    <div className="w-full h-56 rounded-md bg-black/20 cursor-pointer">
       <Canvas 
-        dpr={isMobile ? 1 : [1, 2]} 
+        dpr={[1, 2]} 
         camera={{ fov: 35, position: [0, 0, 4] }}
         onError={() => setError(true)}
-        gl={isMobile ? { 
-          antialias: false,
-          powerPreference: "low-power",
-          alpha: false // Disable transparency for better performance
-        } : undefined}
         onCreated={({ gl }) => {
-          // Proper setup to prevent rendering issues
           gl.domElement.style.display = 'block';
           gl.domElement.style.pointerEvents = 'auto';
         }}
       >
         <Suspense fallback={null}>
-          {isMobile ? (
-            // Lightweight version for mobile
-            <>
-              <ambientLight intensity={0.8} />
-              <directionalLight position={[5, 5, 5]} intensity={0.5} />
-              <Model asset={asset} isMobile={true} />
-            </>
-          ) : (
-            // Full version for desktop
-            <Stage environment="city" intensity={0.6} adjustCamera={false}>
-              <Model asset={asset} isMobile={false} />
-            </Stage>
-          )}
+          <Stage environment="city" intensity={0.6} adjustCamera>
+            <Model asset={asset} isMobile={false} />
+          </Stage>
         </Suspense>
       </Canvas>
     </div>
   );
 }
 
-// Preload models for better performance
 useGLTF.preload.toString().includes('draco'); 
