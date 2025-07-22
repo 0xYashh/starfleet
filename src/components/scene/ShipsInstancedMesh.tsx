@@ -11,6 +11,7 @@ import { preloadVehicles, InstancedEntry } from '@/lib/three/load-vehicle';
 import { ShipLabel } from './ShipLabel';
 import { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
 import { shipPositions } from '@/lib/three/ship-positions';
+import { vehicleMap } from '@/lib/three/vehicle-map';
 
 const tempObject = new Object3D();
 const upVector = new Vector3(0, 1, 0);
@@ -21,7 +22,6 @@ export function ShipsInstancedMesh() {
   const { camera, scene } = useThree();
   const meshGroupRef = useRef<Group>(null);
   const labelGroupRef = useRef<Group>(null);
-  const vehicleMapRef = useRef<Map<string, InstancedEntry>>(new Map());
   const { ships, setShips, addShip, setSelectedShip } = useShipsStore();
   const raycaster = useRef(new Raycaster());
   const mouse = useRef(new Vector2());
@@ -53,7 +53,8 @@ export function ShipsInstancedMesh() {
         const mesh = new InstancedMesh(geometry, material, 500);
         mesh.instanceMatrix.setUsage(DynamicDrawUsage);
         mesh.count = 0;
-        vehicleMapRef.current.set(id, { mesh, shipIds: [] });
+        const entry = { mesh, shipIds: [] };
+        vehicleMap.set(id, entry);
         meshGroupRef.current?.add(mesh);
       });
     });
@@ -71,7 +72,7 @@ export function ShipsInstancedMesh() {
       shipsByVehicle[ship.spaceship_id].push(ship);
     }
     
-    vehicleMapRef.current.forEach((entry, vehicleId) => {
+    vehicleMap.forEach((entry, vehicleId) => {
       const { mesh } = entry;
       const currentShips = shipsByVehicle[vehicleId] || [];
       mesh.count = currentShips.length;
@@ -123,51 +124,7 @@ export function ShipsInstancedMesh() {
     }
   });
 
-  const handlePointerMove = (event: PointerEvent) => {
-    mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    raycaster.current.setFromCamera(mouse.current, camera);
-    const intersects = raycaster.current.intersectObjects(meshGroupRef.current?.children || [], false);
-    
-    document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'grab';
-  };
-
-  const handleClick = (event: MouseEvent) => {
-    // We stop propagation to prevent the label's click handler from firing too
-    event.stopPropagation();
-    
-    raycaster.current.setFromCamera(mouse.current, camera);
-    const intersects = raycaster.current.intersectObjects(meshGroupRef.current?.children || [], false);
-
-    if (intersects.length > 0) {
-      const { instanceId, object } = intersects[0];
-      const mesh = object as InstancedMesh;
-      
-      const entry = Array.from(vehicleMapRef.current.values()).find(e => e.mesh === mesh);
-      if (entry && instanceId !== undefined) {
-        const shipId = entry.shipIds[instanceId];
-        const selected = ships.find(s => s.id === shipId);
-        if (selected) {
-          setSelectedShip(selected);
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      canvas.addEventListener('pointermove', handlePointerMove);
-      canvas.addEventListener('click', handleClick);
-    }
-    return () => {
-      if (canvas) {
-        canvas.removeEventListener('pointermove', handlePointerMove);
-        canvas.removeEventListener('click', handleClick);
-      }
-    };
-  }, [camera, ships]);
+  // No more event listeners here. This component is now purely for rendering.
 
   return (
     <>

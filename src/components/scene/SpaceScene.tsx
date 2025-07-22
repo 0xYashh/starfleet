@@ -1,10 +1,66 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Environment } from './Environment';
 import { CameraManager } from './camera-manager';
+import * as THREE from 'three';
+import { vehicleMap } from '@/lib/three/vehicle-map';
+import { useShipsStore } from '@/lib/three/useShipsStore';
+
+function InteractionManager() {
+  const { camera, scene } = useThree();
+  const setSelectedShip = useShipsStore((state) => state.setSelectedShip);
+  const ships = useShipsStore((state) => state.ships);
+  const raycaster = useRef(new THREE.Raycaster());
+  const mouse = useRef(new THREE.Vector2());
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      
+      raycaster.current.setFromCamera(mouse.current, camera);
+      const meshes = Array.from(vehicleMap.values()).map(e => e.mesh);
+      const intersects = raycaster.current.intersectObjects(meshes, false);
+
+      document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'grab';
+    };
+
+    const handleClick = () => {
+      raycaster.current.setFromCamera(mouse.current, camera);
+      const meshes = Array.from(vehicleMap.values()).map(e => e.mesh);
+      const intersects = raycaster.current.intersectObjects(meshes, false);
+
+      if (intersects.length > 0) {
+        const { instanceId, object } = intersects[0];
+        const mesh = object as THREE.InstancedMesh;
+        const entry = Array.from(vehicleMap.values()).find(e => e.mesh === mesh);
+
+        if (entry && instanceId !== undefined) {
+          const shipId = entry.shipIds[instanceId];
+          const selected = ships.find(s => s.id === shipId);
+          if (selected) setSelectedShip(selected);
+        }
+      }
+    };
+
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      canvas.addEventListener('pointermove', handlePointerMove);
+      canvas.addEventListener('click', handleClick);
+    }
+    return () => {
+      if (canvas) {
+        canvas.removeEventListener('pointermove', handlePointerMove);
+        canvas.removeEventListener('click', handleClick);
+      }
+    };
+  }, [camera, ships, setSelectedShip]);
+
+  return null;
+}
 
 export function SpaceScene() {
   const [cursor, setCursor] = useState('auto');
@@ -44,6 +100,7 @@ export function SpaceScene() {
         <Suspense fallback={null}>
           <Environment />
           <CameraManager />
+          <InteractionManager />
         </Suspense>
         <OrbitControls
           // --- Interaction Enhancements ---
