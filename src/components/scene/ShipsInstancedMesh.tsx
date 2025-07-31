@@ -1,22 +1,22 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { InstancedMesh, Object3D, DynamicDrawUsage, Group, Vector3, Raycaster, Vector2 } from 'three';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 import { supabase } from '@/lib/supabase/client';
 import type { Ship } from '@/lib/types/ship';
-import { getFreeVehicles, getPaidVehicles, getVehicleById } from '@/lib/data/spaceships';
-import { preloadVehicles, InstancedEntry } from '@/lib/three/load-vehicle';
+import { getFreeVehicles, getPaidVehicles, getVehicleById, VehicleAsset } from '@/lib/data/spaceships';
+import { preloadVehicles } from '@/lib/three/load-vehicle';
 import { ShipLabel } from './ShipLabel';
 import { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
 import { shipPositions } from '@/lib/three/ship-positions';
 import { vehicleMap } from '@/lib/three/vehicle-map';
+import { FallbackMesh } from './FallbackMesh';
 
 const tempObject = new Object3D();
-const upVector = new Vector3(0, 1, 0);
 const allAssets = [...getFreeVehicles(), ...getPaidVehicles()];
-const SCALE = 0.01; // Final scale adjustment for a more distant view
+const SCALE = 0.01;
 
 export function ShipsInstancedMesh() {
   const { camera, scene } = useThree();
@@ -25,6 +25,7 @@ export function ShipsInstancedMesh() {
   const { ships, setShips, addShip, setSelectedShip } = useShipsStore();
   const raycaster = useRef(new Raycaster());
   const mouse = useRef(new Vector2());
+  const [fallbackMeshes, setFallbackMeshes] = useState<{ [id: string]: any }>({});
 
   // Initial data fetch and real-time subscription
   useEffect(() => {
@@ -60,6 +61,39 @@ export function ShipsInstancedMesh() {
     });
   }, []);
   
+  // Dynamically preload and add instanced mesh for new vehicle types
+  useEffect(() => {
+    const knownVehicleIds = new Set(allAssets.map(a => a.id));
+    const seen = new Set<string>();
+    ships.forEach((ship) => {
+      if (!vehicleMap.has(ship.spaceship_id) && !seen.has(ship.spaceship_id)) {
+        seen.add(ship.spaceship_id);
+        const asset = getVehicleById(ship.spaceship_id) as VehicleAsset | undefined;
+        if (asset) {
+          preloadVehicles([asset]).then((preloaded) => {
+            preloaded.forEach(({ geometry, material }, id) => {
+              try {
+                const mesh = new InstancedMesh(geometry, material, 500);
+                mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+                mesh.count = 0;
+                const entry = { mesh, shipIds: [] };
+                vehicleMap.set(id, entry);
+                meshGroupRef.current?.add(mesh);
+              } catch (err) {
+                // Fallback: store mesh for regular rendering
+                import('@/lib/three/load-vehicle').then(({ loadVehicle }) => {
+                  loadVehicle(asset).then((scene) => {
+                    setFallbackMeshes(prev => ({ ...prev, [id]: scene.clone() }));
+                  });
+                });
+              }
+            });
+          });
+        }
+      }
+    });
+  }, [ships]);
+
   // Per-frame orbit calculation
   useFrame(({ clock }) => {
     const elapsedTime = clock.getElapsedTime();
@@ -136,6 +170,21 @@ export function ShipsInstancedMesh() {
           </group>
         ))}
       </group>
+      {/* Fallback: Render non-instanced meshes for incompatible models */}
+      {ships.map(ship => {
+        const fallback = fallbackMeshes[ship.spaceship_id];
+        if (fallback) {
+          return (
+            <FallbackMesh
+              key={ship.id + '-fallback'}
+              scene={fallback}
+              ship={ship}
+              scale={SCALE}
+            />
+          );
+        }
+        return null;
+      })}
     </>
   );
 } 

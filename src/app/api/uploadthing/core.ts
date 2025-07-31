@@ -9,7 +9,7 @@ export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique route slug
   shipIcon: f({ image: { maxFileSize: "1MB", maxFileCount: 1 } })
     // Set permissions and file types for this FileRoute
-    .middleware(async ({ req }) => {
+    .middleware(async ({}) => {
       const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
  
@@ -25,7 +25,7 @@ export const ourFileRouter = {
       return { uploadedBy: metadata.userId };
     }),
   shipCover: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
-    .middleware(async ({ req }) => {
+    .middleware(async ({}) => {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new UploadThingError("Unauthorized");

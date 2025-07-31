@@ -5,6 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Stage } from '@react-three/drei';
 import type { VehicleAsset } from '@/lib/data/spaceships';
 import * as THREE from 'three';
+import Image from 'next/image';
 
 function Model({ asset, isMobile = false }: { asset: VehicleAsset; isMobile?: boolean }) {
   const [modelUrl, setModelUrl] = useState(asset.remoteUrl || asset.localPath);
@@ -94,9 +95,11 @@ export function VehiclePreview({ asset }: { asset: VehicleAsset }) {
   if (isMobile) {
     return (
       <div className="w-full h-56 rounded-md bg-black/20 cursor-pointer">
-        <img 
+        <Image 
           src={asset.previewPng || '/icon/starfleet.svg'} 
           alt={asset.label} 
+          width={224}
+          height={224}
           className="w-full h-full object-contain"
         />
       </div>

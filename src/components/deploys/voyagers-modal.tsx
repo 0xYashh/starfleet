@@ -15,13 +15,23 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 
+interface Profile {
+  x_handle: string | null;
+  instagram_handle: string | null;
+  display_name: string | null;
+}
+
+interface ShipWithProfile extends Ship {
+  profiles: Profile | null;
+}
+
 interface VoyagersModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
-  const [ships, setShips] = useState<Ship[]>([]);
+  const [ships, setShips] = useState<ShipWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const setSelectedShip = useShipsStore((state) => state.setSelectedShip);
 
@@ -36,7 +46,7 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
           .limit(20);
 
         if (error) throw error;
-        setShips(data || []);
+        setShips((data as ShipWithProfile[]) || []);
       } catch (error) {
         console.error('Error loading voyagers:', error);
       } finally {
@@ -49,8 +59,8 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
     }
   }, [open]);
 
-  const handleVoyagerClick = (ship: Ship) => {
-    const profile = (ship as any).profiles;
+  const handleVoyagerClick = (ship: ShipWithProfile) => {
+    const profile = ship.profiles;
     if (profile?.x_handle) {
       window.open(`https://x.com/${profile.x_handle}`, '_blank');
     } else if (profile?.instagram_handle) {
@@ -85,7 +95,7 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
             <div className="grid grid-cols-2 gap-4">
               {ships.map((ship) => {
                 const vehicle = getVehicleById(ship.spaceship_id);
-                const profile = (ship as any).profiles;
+                const profile = ship.profiles;
                 let handle = profile?.display_name || 'Anonymous';
                 if (profile?.x_handle) handle = `@${profile.x_handle}`;
                 else if (profile?.instagram_handle) handle = `@${profile.instagram_handle}`;
@@ -112,4 +122,4 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
       </DialogContent>
     </Dialog>
   );
-} 
+}

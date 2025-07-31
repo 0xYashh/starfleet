@@ -10,7 +10,7 @@ import { vehicleMap } from '@/lib/three/vehicle-map';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 
 function InteractionManager() {
-  const { camera, scene } = useThree();
+  const { camera } = useThree();
   const setSelectedShip = useShipsStore((state) => state.setSelectedShip);
   const ships = useShipsStore((state) => state.ships);
   const raycaster = useRef(new THREE.Raycaster());

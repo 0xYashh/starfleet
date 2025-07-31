@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { InstancedEntry } from './load-vehicle';
 
 // A simple, non-reactive global map to store the instanced mesh entries.

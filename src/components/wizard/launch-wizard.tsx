@@ -176,6 +176,10 @@ const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
 }) => {
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [iconUploading, setIconUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [iconError, setIconError] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
 
   return (
     <div className="space-y-6">
@@ -184,11 +188,22 @@ const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
         <p className="text-sm text-white/70 mb-3">A square 1:1 image, max 1MB.</p>
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-md bg-black/20 flex items-center justify-center">
-            {iconUrl ? <Image src={iconUrl} alt="Icon preview" width={96} height={96} className="rounded-md object-cover" /> : <span className="text-white/40 text-xs">Preview</span>}
+            {iconUploading ? (
+              <span className="text-white/40 text-xs animate-pulse">Uploading...</span>
+            ) : iconUrl ? (
+              <Image src={iconUrl} alt="Icon preview" width={96} height={96} className="rounded-md object-cover" />
+            ) : (
+              <span className="text-white/40 text-xs">Preview</span>
+            )}
           </div>
           <UploadButton
             endpoint="shipIcon"
+            onUploadBegin={() => {
+              setIconUploading(true);
+              setIconError(null);
+            }}
             onClientUploadComplete={(res) => {
+              setIconUploading(false);
               if (res && res[0]) {
                 const url = res[0].url;
                 setIconUrl(url);
@@ -196,10 +211,13 @@ const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
               }
             }}
             onUploadError={(error: Error) => {
-              alert(`ERROR! ${error.message}`);
+              setIconUploading(false);
+              setIconError(error.message);
             }}
+            disabled={iconUploading}
           />
         </div>
+        {iconError && <p className="text-red-400 text-xs mt-2">{iconError}</p>}
       </div>
 
       <div className="p-4 rounded-lg bg-black/20 border border-white/20">
@@ -207,11 +225,22 @@ const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
         <p className="text-sm text-white/70 mb-3">A landscape 16:9 image, max 4MB.</p>
         <div className="flex items-center gap-4">
           <div className="w-48 h-27 rounded-md bg-black/20 flex items-center justify-center">
-             {coverUrl ? <Image src={coverUrl} alt="Cover preview" width={192} height={108} className="rounded-md object-cover" /> : <span className="text-white/40 text-xs">Preview</span>}
+            {coverUploading ? (
+              <span className="text-white/40 text-xs animate-pulse">Uploading...</span>
+            ) : coverUrl ? (
+              <Image src={coverUrl} alt="Cover preview" width={192} height={108} className="rounded-md object-cover" />
+            ) : (
+              <span className="text-white/40 text-xs">Preview</span>
+            )}
           </div>
           <UploadButton
             endpoint="shipCover"
+            onUploadBegin={() => {
+              setCoverUploading(true);
+              setCoverError(null);
+            }}
             onClientUploadComplete={(res) => {
+              setCoverUploading(false);
               if (res && res[0]) {
                 const url = res[0].url;
                 setCoverUrl(url);
@@ -219,10 +248,13 @@ const VisualDeckStep = ({ setIconFileUrl, setCoverFileUrl }: {
               }
             }}
             onUploadError={(error: Error) => {
-              alert(`ERROR! ${error.message}`);
+              setCoverUploading(false);
+              setCoverError(error.message);
             }}
+            disabled={coverUploading}
           />
         </div>
+        {coverError && <p className="text-red-400 text-xs mt-2">{coverError}</p>}
       </div>
     </div>
   );
@@ -284,7 +316,6 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
 
 
 export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardProps) {
-  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -340,23 +371,6 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     const finalRoles = [...selectedRoles];
     if (otherRole) finalRoles.push(otherRole);
     
-    const payload = {
-      commanderName, 
-      roles: finalRoles, 
-      websiteUrl, 
-      xHandle, 
-      instagramHandle, 
-      youtubeUrl,
-      shipName, 
-      missionTagline, 
-      missionBrief, 
-      status, 
-      orbitTags,
-      iconUrl: iconFileUrl,
-      coverUrl: coverFileUrl,
-      selectedVehicleId,
-    };
-
     try {
       const response = await fetch('/api/deploy', {
         method: 'POST',
@@ -383,9 +397,10 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
       onOpenChange(false);
       // Optionally, you could show a success toast here.
       
-    } catch (err: any) {
-      setError(err.message);
-      console.error("Deployment failed:", err);
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message);
+      console.error("Deployment failed:", error);
     } finally {
       setIsLoading(false);
     }
