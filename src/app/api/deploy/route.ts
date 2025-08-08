@@ -47,12 +47,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'profile-setup-failed' }, { status: 500 });
     }
 
-    // Determine orbit parameters based on vehicle type
+    // Determine orbit parameters based on vehicle type - TRUE 3D ORBITAL MECHANICS
     const isPaid = vehicle.price > 0;
-    const orbit_radius = isPaid ? (6 + Math.random() * 2) : (4 + Math.random()); // 6-8 for paid, 4-5 for free
-    const inclination = (Math.random() - 0.5) * (isPaid ? 0.2 : 0.5); // Less inclination for paid ships
-    const phase = Math.random() * Math.PI * 2;
-    const angular_speed = Math.abs(0.25 / orbit_radius); // Ensure positive for consistent direction
+    
+    // True 3D orbital parameters for satellite-like behavior
+    const orbit_radius = 4 + Math.random() * 2; // 4-6 for safe distance from planet (was 2-3.5)
+    const inclination = (Math.random() - 0.5) * Math.PI; // Full 3D inclination range
+    const phase = Math.random() * Math.PI * 2; // Random starting position
+    const ascending_node = Math.random() * Math.PI * 2; // Random orbital plane orientation
+    const eccentricity = 0.1 + Math.random() * 0.2; // Slight eccentricity for realism
+    const angular_speed = Math.abs(0.3 / orbit_radius); // Orbital speed
 
     const { data, error } = await supabase.from('ships').insert({
       user_id: user.id,
@@ -65,6 +69,8 @@ export async function POST(req: NextRequest) {
       orbit_radius,
       inclination,
       phase,
+      ascending_node,
+      eccentricity,
       angular_speed,
       price: vehicle.price, // Use the actual price from vehicle data
       icon_url: iconUrl,

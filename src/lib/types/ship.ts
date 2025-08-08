@@ -10,6 +10,8 @@ export interface Ship {
   orbit_radius: number;
   inclination: number;
   phase: number;
+  ascending_node: number;
+  eccentricity: number;
   angular_speed: number;
   price: number;
   created_at: string;

@@ -339,3 +339,28 @@ git push -u origin main
 * Integrated Barriecito branding font + Poppins form font.
 * Updated CartoonButton styling to retro offset-shadow style.
 * Planet scene, starfield tweaks, and modal animations. 
+
+## 2025-08-08  — Orbit Overhaul & Rendering Fixes
+
+### Context
+Paid ships were black / invisible, orientation wrong, orbits 2-D, clipping planet.
+
+### Key Fixes
+1. Local-first GLB loading for paid ships (CORS-safe).
+2. Replaced InstancedMesh extraction with per-ship `<primitive>` using `useGLTF`.
+3. Added 3-D orbital mechanics (inclination, ascending node, eccentricity).
+4. Safety guard – pushes ships outward if distance < planet radius + 0.5.
+5. Velocity-based orientation + ship-specific yaw corrections.
+6. Banking, bobbing, subtle rotation for ‘alive’ feel.
+7. Scale tuned (`SCALE = 0.2`).
+8. Per-ship Point & Ambient lights.
+9. Distance culling when > 50 ships.
+10. DB migration: `ascending_node`, `eccentricity` columns with defaults.
+
+### Result
+• Ships render with correct materials & full geometry.
+• Orbit anywhere around planet; no clipping.
+• Heads point along flight path; dynamic motion.
+• Launch Wizard unchanged; main scene now matches quality.
+
+> See commit series around 2025-08-08 for full diff. 

@@ -273,7 +273,7 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-bold">✈️ Free Aircraft</h3>
-        <p className="text-sm text-white/70">Launch into the lower orbit atmospheric layer.</p>
+        {/* <p className="text-sm text-white/70">Launch into the lower orbit atmospheric layer.</p> */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
           {freeVehicles.map(vehicle => (
             <div key={vehicle.id} onClick={() => setSelectedVehicleId(vehicle.id)} className={cn("p-2 rounded-lg border-2 cursor-pointer transition-colors", selectedVehicleId === vehicle.id ? 'border-blue-400 bg-blue-500/20' : 'border-transparent hover:bg-white/10')}>
@@ -287,7 +287,7 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
       
       <div>
         <h3 className="text-xl font-bold">🚀 Paid Spaceships ($5)</h3>
-        <p className="text-sm text-white/70">Soar into the higher orbit space layer.</p>
+        {/* <p className="text-sm text-white/70">Soar into the higher orbit space layer.</p> */}
         <div className="relative group">
           <div className="overflow-hidden" ref={emblaRef}>
              <div className="flex">
@@ -302,10 +302,10 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
               ))}
             </div>
           </div>
-           <button onClick={() => emblaApi?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
+           <button type="button" onClick={() => emblaApi?.scrollPrev()} className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20" aria-label="Previous">
              <ChevronLeft size={24} />
            </button>
-           <button onClick={() => emblaApi?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20">
+           <button type="button" onClick={() => emblaApi?.scrollNext()} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-transparent rounded-full text-white/50 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all disabled:opacity-20" aria-label="Next">
              <ChevronRight size={24} />
            </button>
         </div>

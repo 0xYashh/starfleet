@@ -39,14 +39,39 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
     async function loadRecentDeploys() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        // Fetch recent ships
+        const { data: shipRows, error: shipsError } = await supabase
           .from('ships')
-          .select('*, profiles(x_handle, instagram_handle, display_name)')
+          .select('*')
           .order('created_at', { ascending: false })
           .limit(20);
 
-        if (error) throw error;
-        setShips((data as ShipWithProfile[]) || []);
+        if (shipsError) throw shipsError;
+        const baseShips = (shipRows as Ship[]) || [];
+
+        // Fetch related profiles in one query
+        const userIds = Array.from(new Set(baseShips.map((s) => s.user_id)));
+        let profileMap = new Map<string, Profile>();
+        if (userIds.length > 0) {
+          const { data: profilesRows, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, x_handle, instagram_handle, display_name')
+            .in('id', userIds);
+          if (profilesError) throw profilesError;
+          (profilesRows || []).forEach((p: any) => {
+            profileMap.set(p.id, {
+              x_handle: p.x_handle ?? null,
+              instagram_handle: p.instagram_handle ?? null,
+              display_name: p.display_name ?? null,
+            });
+          });
+        }
+
+        const withProfiles: ShipWithProfile[] = baseShips.map((s) => ({
+          ...(s as Ship),
+          profiles: profileMap.get(s.user_id) ?? null,
+        }));
+        setShips(withProfiles);
       } catch (error) {
         console.error('Error loading voyagers:', error);
       } finally {
@@ -104,7 +129,7 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
                   <div key={ship.id} onClick={() => handleVoyagerClick(ship)} className="p-3 bg-black/20 rounded-lg flex flex-col items-center text-center gap-2 hover:bg-white/10 transition-colors cursor-pointer">
                     <div className="w-16 h-16 rounded-md bg-black/20 flex-shrink-0">
                       {ship.icon_url ? (
-                        <Image src={ship.icon_url} alt={ship.name} width={64} height={64} className="rounded-md object-cover" />
+                        <Image src={ship.icon_url} alt={ship.name} width={64} height={64} className="rounded-md object-cover" unoptimized />
                       ) : (
                         <span className="text-3xl w-full h-full flex items-center justify-center">{vehicle?.category === 'aircraft' ? '✈️' : '🚀'}</span>
                       )}
