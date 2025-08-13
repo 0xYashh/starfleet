@@ -29,7 +29,7 @@ const SHIP_SCALES: Record<string, number> = {
   'ship-2': 0.15,
   'ship-3': 0.15,
   'ship-4': 0.15,
-  'ship-5': 0.15,
+  'ship-5': 4.40,
 };
 
 // Ship instances - one per ship in database
@@ -154,6 +154,13 @@ export function ShipsInstancedMesh() {
       supabase.removeChannel(channel);
     };
   }, [setShips, addShip]);
+
+  // Keep visibleShips in sync with ships store when under performance threshold
+  useEffect(() => {
+    if (ships.length <= 50) {
+      setVisibleShips(ships);
+    }
+  }, [ships]);
 
   // Performance optimization: Update visible ships based on camera distance
   useFrame(() => {

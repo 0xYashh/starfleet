@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS ships (
   inclination REAL,
   phase REAL,
   angular_speed REAL,
-  price INTEGER NOT NULL DEFAULT 0,
+    price INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -162,3 +162,7 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
+
+-- 11. Enable real-time for ships table
+-- This is crucial for instant spaceship appearance in the 3D scene
+ALTER PUBLICATION supabase_realtime ADD TABLE ships;
