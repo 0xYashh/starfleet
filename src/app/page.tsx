@@ -2,6 +2,7 @@
 
 import { CartoonButton } from '@/components/ui/cartoon-button';
 import { SpaceScene } from '@/components/scene/SpaceScene';
+import { SceneLoader } from '@/components/scene/SceneLoader';
 import { useState, Suspense } from 'react';
 import { LaunchWizard } from '@/components/wizard/launch-wizard';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -51,8 +52,9 @@ function HomeContent() {
   };
 
   return (
-    <div className="relative min-h-screen text-white">
-      <SpaceScene />
+    <SceneLoader>
+      <div className="relative min-h-screen text-white">
+        <SpaceScene />
       
       {/* Top UI */}
       <nav className="fixed top-0 left-0 right-0 z-40 flex flex-col md:flex-row md:justify-between md:items-start p-4 pointer-events-none">
@@ -156,13 +158,21 @@ function HomeContent() {
       />
       <VoyagersModal open={showVoyagers} onOpenChange={setShowVoyagers} />
       <ProfileModal />
-    </div>
+      </div>
+    </SceneLoader>
   );
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">Loading Starfleet...</p>
+        </div>
+      </div>
+    }>
       <HomeContent />
     </Suspense>
   );

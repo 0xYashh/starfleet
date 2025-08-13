@@ -17,4 +17,12 @@ export interface Ship {
   created_at: string;
   icon_url: string | null;
   screenshot_url: string | null;
+  // New metadata from Launch Wizard
+  commander_name?: string | null;
+  roles?: string[];
+  status?: 'Building' | 'Launched';
+  x_handle?: string | null;
+  instagram_handle?: string | null;
+  github_handle?: string | null;
+  youtube_url?: string | null;
 } 

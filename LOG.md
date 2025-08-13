@@ -364,3 +364,166 @@ Paid ships were black / invisible, orientation wrong, orbits 2-D, clipping plane
 • Launch Wizard unchanged; main scene now matches quality.
 
 > See commit series around 2025-08-08 for full diff. 
+
+## 2025-08-XX — Label Scaling, Modal Fixes & Ship Scaling System
+
+### Context
+Recent work focused on improving the user experience with better label visibility, fixing modal functionality, and creating a flexible ship scaling system.
+
+### Key Improvements
+
+#### 🏷️ Ship Label Enhancements
+**Date:** August 2025  
+**Files Modified:** `src/components/scene/ShipLabel.tsx`
+
+**Changes Made:**
+- **Label Size:** Increased from `distanceFactor={8}` to `{5}` for better visibility
+- **Container Width:** Expanded from `max-w-[180px]` to `max-w-[360px]` to accommodate taglines
+- **Text Sizing:** Upgraded from `text-xs` to `text-sm` for improved readability
+- **Icon Size:** Increased from 24x24 to 28x28 pixels for better visual balance
+- **Tagline Support:** Enabled full tagline display with `whitespace-normal` and `break-words`
+- **Responsive Layout:** Added `min-w-[260px]` and `max-w-[560px]` for flexible sizing
+
+**Result:** Labels now match the style seen on millionship.dev with proper sizing and full text display.
+
+#### 🚀 Ship Scaling System Overhaul
+**Date:** August 2025  
+**Files Modified:** `src/components/scene/ShipsInstancedMesh.tsx`
+
+**Changes Made:**
+- **Replaced Complex Logic:** Eliminated hardcoded scaling conditions
+- **Configuration Object:** Created `SHIP_SCALES` mapping for easy individual ship adjustments
+- **Free Aircraft Scaling:** 
+  - Jet: 0.01 (was too large)
+  - Airship: 0.004 (significantly smaller than jet)
+- **Paid Spaceship Scaling:**
+  - Air Police: 0.15
+  - Colored Freighter: 0.30
+  - X-Wing II: 0.3
+  - X-Wing: 0.45
+  - Stardust Cruiser (ship-1): 0.003 (was too large)
+  - Other ships: 0.15
+- **Fallback System:** Default scale 0.20 for unconfigured ships
+
+**Result:** Easy-to-maintain scaling system where developers can tweak individual ship sizes by editing the configuration object.
+
+#### 🔧 Modal Functionality Fixes
+**Date:** August 2025  
+**Files Modified:** `src/components/deploys/voyagers-modal.tsx`, `src/components/wizard/launch-wizard.tsx`
+
+**Voyagers Modal Fixes:**
+- **Database Query:** Replaced nested select with robust two-step fetch (ships → profiles)
+- **Profile Handling:** Client-side join for profiles to avoid RLS/FK issues
+- **Image Optimization:** Added `unoptimized` flag for external icon URLs
+- **Error Handling:** Improved error handling and loading states
+
+**Launch Wizard Fixes:**
+- **Auto-Submit Prevention:** Fixed carousel navigation buttons causing accidental form submission
+- **Button Types:** Set carousel arrows to `type="button"` to prevent form submission
+- **Payload Sanitization:** Cleaned form data before API submission to prevent validation errors
+
+**Result:** Modals now function properly without auto-triggering or validation failures.
+
+#### 📊 Profile Modal Enhancement
+**Date:** August 2025  
+**Files Modified:** `src/components/ship/profile-modal.tsx`
+
+**Changes Made:**
+- **Extended Ship Interface:** Added commander name, roles, status, and social handles
+- **Status Display:** Shows "Building" or "Launched" instead of Free/Paid
+- **Commander Section:** Displays pilot name and roles from Launch Wizard
+- **Social Links:** Renders X, Instagram, and YouTube handles with proper links
+- **Vehicle Info:** Shows ship type label and orbit tags
+- **Layout Improvements:** Added meta cards for better information organization
+
+**Result:** Profile modal now displays comprehensive information about each ship and its pilot.
+
+#### 🗄️ Database Schema Extension
+**Date:** August 2025  
+**Files Created:** `add-ship-metadata-migration.sql`
+
+**New Fields Added:**
+- `commander_name text` - Pilot's name from Launch Wizard
+- `roles text[]` - Array of pilot roles (Founder, Developer, Designer, etc.)
+- `status text` - Ship status: 'Building' or 'Launched'
+- `x_handle text` - X/Twitter handle
+- `instagram_handle text` - Instagram handle  
+- `youtube_url text` - YouTube channel/URL
+
+**Migration Features:**
+- **Safe Execution:** Uses `IF NOT EXISTS` for idempotent operation
+- **Constraint Validation:** Status field restricted to valid values
+- **Data Backfill:** Existing ships defaulted to 'Launched' status
+- **Array Support:** Roles field uses PostgreSQL array type
+
+#### 🔌 API Endpoint Enhancement
+**Date:** August 2025  
+**Files Modified:** `src/app/api/deploy/route.ts`
+
+**Changes Made:**
+- **Schema Extension:** Added validation for new wizard fields
+- **Data Processing:** Accepts and stores commander info, roles, status, and socials
+- **Field Mapping:** Properly maps form data to database columns
+- **Validation:** Enhanced Zod schema with proper constraints
+
+**Result:** Launch Wizard data now properly saved to database with full metadata.
+
+#### 🎯 Type System Updates
+**Date:** August 2025  
+**Files Modified:** `src/lib/types/ship.ts`
+
+**Changes Made:**
+- **Extended Ship Interface:** Added optional fields for wizard metadata
+- **Social Media Types:** Proper typing for handles and URLs
+- **Status Enum:** Type-safe status values
+- **Array Support:** Roles field as string array
+
+**Result:** Full TypeScript support for new ship metadata fields.
+
+### Technical Improvements
+
+#### 🚀 Performance Optimizations
+- **Ship Scaling:** Individual ship scales prevent size inconsistencies
+- **Label Rendering:** Optimized label positioning and sizing
+- **Modal Loading:** Improved data fetching patterns for better performance
+
+#### 🛡️ Error Prevention
+- **Form Validation:** Better payload sanitization prevents API errors
+- **Database Safety:** Migration handles existing data gracefully
+- **Type Safety:** Enhanced TypeScript interfaces prevent runtime errors
+
+#### 🎨 User Experience
+- **Label Readability:** Larger, clearer ship labels
+- **Modal Functionality:** Fixed broken Voyagers and Hangar modals
+- **Ship Information:** Comprehensive profile display
+- **Scaling Control:** Easy adjustment of individual ship sizes
+
+### Files Modified Summary
+- `src/components/scene/ShipLabel.tsx` - Label sizing and layout
+- `src/components/scene/ShipsInstancedMesh.tsx` - Scaling system overhaul
+- `src/components/deploys/voyagers-modal.tsx` - Database query fixes
+- `src/components/wizard/launch-wizard.tsx` - Form submission fixes
+- `src/components/ship/profile-modal.tsx` - Enhanced information display
+- `src/app/api/deploy/route.ts` - Extended API schema
+- `src/lib/types/ship.ts` - Type system updates
+- `add-ship-metadata-migration.sql` - Database migration
+
+### Result
+The Starfleet experience now provides:
+- ✅ Clear, readable ship labels matching design requirements
+- ✅ Properly functioning modals for Voyagers and Hangar
+- ✅ Comprehensive ship profiles with pilot information
+- ✅ Flexible ship scaling system for easy adjustments
+- ✅ Extended database schema for rich metadata
+- ✅ Enhanced Launch Wizard data capture and storage
+
+**Next Steps:** 
+- Apply database migration to production
+- Test new scaling system with various ship combinations
+- Consider adding more metadata fields based on user feedback
+
+---
+
+**Last Updated:** August 2025  
+**Next Review:** After database migration deployment  
+**Maintained by:** PxlCorp Development Team 

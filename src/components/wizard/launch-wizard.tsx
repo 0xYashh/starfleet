@@ -15,7 +15,7 @@ import { getFreeVehicles, getPaidVehicles, getVehicleById } from '@/lib/data/spa
 import { VehiclePreview } from './vehicle-preview';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useAuth } from '../auth/auth-provider';
+// Removed unused import
 import { UploadButton } from '@/lib/uploadthing';
 import Image from 'next/image';
 import type { Ship } from '@/lib/types/ship';
@@ -33,7 +33,7 @@ interface LaunchWizardProps {
 // --- Step 1: Commander Profile ---
 const CommanderProfileStep = ({
   commanderName, setCommanderName, selectedRoles, handleRoleChange, otherRole, setOtherRole,
-  websiteUrl, setWebsiteUrl, xHandle, setXHandle, instagramHandle, setInstagramHandle, youtubeUrl, setYoutubeUrl
+  websiteUrl, setWebsiteUrl, xHandle, setXHandle, instagramHandle, setInstagramHandle, youtubeUrl, setYoutubeUrl, githubHandle, setGithubHandle
 }: {
   commanderName: string; setCommanderName: Dispatch<SetStateAction<string>>;
   selectedRoles: string[]; handleRoleChange: (role: string) => void;
@@ -42,6 +42,7 @@ const CommanderProfileStep = ({
   xHandle: string; setXHandle: Dispatch<SetStateAction<string>>;
   instagramHandle: string; setInstagramHandle: Dispatch<SetStateAction<string>>;
   youtubeUrl: string; setYoutubeUrl: Dispatch<SetStateAction<string>>;
+  githubHandle: string; setGithubHandle: Dispatch<SetStateAction<string>>;
 }) => (
   <div className="space-y-4">
     <h3 className="text-xl font-bold">🧑‍🚀 Commander Profile</h3>
@@ -69,11 +70,12 @@ const CommanderProfileStep = ({
       )}
     </div>
     <div>
-      <label className="text-sm font-medium">Mission Control Links</label>
+      <label className="text-sm font-medium">Mission Control Links (optional)</label>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
-        <input type="url" placeholder="Website" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="input-glass" required/>
+        <input type="url" placeholder="Website (optional)" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="input-glass" />
         <input type="text" placeholder="X Handle (e.g., yashk)" value={xHandle} onChange={(e) => setXHandle(e.target.value)} className="input-glass" />
         <input type="text" placeholder="Instagram Handle (e.g., yash.k)" value={instagramHandle} onChange={(e) => setInstagramHandle(e.target.value)} className="input-glass" />
+        <input type="text" placeholder="GitHub Handle (e.g., yashpxl)" value={githubHandle} onChange={(e) => setGithubHandle(e.target.value)} className="input-glass" />
         <input type="url" placeholder="YouTube (optional)" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} className="input-glass" />
       </div>
     </div>
@@ -329,6 +331,7 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
   const [xHandle, setXHandle] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [githubHandle, setGithubHandle] = useState('');
   const [shipName, setShipName] = useState('');
   const [missionTagline, setMissionTagline] = useState('');
   const [missionBrief, setMissionBrief] = useState('');
@@ -372,19 +375,29 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     if (otherRole) finalRoles.push(otherRole);
     
     try {
+      // Sanitize/normalize optional fields
+      const payload: any = {
+        shipName,
+        spaceshipId: selectedVehicleId,
+        websiteUrl,
+        tagline: missionTagline || undefined,
+        description: missionBrief || undefined,
+        orbitTags,
+        iconUrl: iconFileUrl || undefined,
+        screenshotUrl: coverFileUrl || undefined,
+        commanderName: commanderName || undefined,
+        roles: finalRoles.length ? finalRoles : undefined,
+        status,
+        xHandle: xHandle ? xHandle.replace(/^@/, '') : undefined,
+        instagramHandle: instagramHandle ? instagramHandle.replace(/^@/, '') : undefined,
+        githubHandle: githubHandle ? githubHandle.replace(/^@/, '') : undefined,
+        youtubeUrl: youtubeUrl && /^https?:\/\//i.test(youtubeUrl) ? youtubeUrl : undefined,
+      };
+
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shipName,
-          spaceshipId: selectedVehicleId,
-          websiteUrl,
-          tagline: missionTagline,
-          description: missionBrief,
-          orbitTags,
-          iconUrl: iconFileUrl,
-          screenshotUrl: coverFileUrl,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -454,7 +467,7 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
                 (step === 1 || step === 2 || step === 4) && "overflow-y-auto custom-scrollbar"
               )}
             >
-              {step === 1 && <CommanderProfileStep {...{ commanderName, setCommanderName, selectedRoles, handleRoleChange, otherRole, setOtherRole, websiteUrl, setWebsiteUrl, xHandle, setXHandle, instagramHandle, setInstagramHandle, youtubeUrl, setYoutubeUrl }} />}
+              {step === 1 && <CommanderProfileStep {...{ commanderName, setCommanderName, selectedRoles, handleRoleChange, otherRole, setOtherRole, websiteUrl, setWebsiteUrl, xHandle, setXHandle, instagramHandle, setInstagramHandle, youtubeUrl, setYoutubeUrl, githubHandle, setGithubHandle }} />}
               {step === 2 && <SpaceshipIdentityStep {...{ shipName, setShipName, missionTagline, setMissionTagline, missionBrief, setMissionBrief, status, setStatus, orbitTags, setOrbitTags }} />}
               {step === 3 && <VisualDeckStep setIconFileUrl={setIconFileUrl} setCoverFileUrl={setCoverFileUrl} />}
               {step === 4 && <ChooseVehicleStep {...{ selectedVehicleId, setSelectedVehicleId }} />}

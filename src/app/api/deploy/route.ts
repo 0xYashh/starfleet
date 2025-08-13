@@ -6,12 +6,20 @@ import { getVehicleById } from '@/lib/data/spaceships';
 const DeployShipSchema = z.object({
   shipName: z.string().min(2, "Ship name must be at least 2 characters").max(100),
   spaceshipId: z.string().min(1, "A vehicle must be selected"),
-  websiteUrl: z.string().url("A valid website URL is required"),
+  websiteUrl: z.string().url("A valid website URL is required").optional(),
   tagline: z.string().max(60).optional(),
   description: z.string().max(500).optional(),
   orbitTags: z.array(z.string()).max(3, "You can have a maximum of 3 tags").optional(),
   iconUrl: z.string().url().optional(),
   screenshotUrl: z.string().url().optional(),
+  // New wizard fields
+  commanderName: z.string().max(120).optional(),
+  roles: z.array(z.string()).max(8).optional(),
+  status: z.enum(['Building','Launched']).optional(),
+  xHandle: z.string().max(50).optional(),
+  instagramHandle: z.string().max(50).optional(),
+  githubHandle: z.string().max(50).optional(),
+  youtubeUrl: z.string().url().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -28,7 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'invalid-payload', details: parsed.error.format() }, { status: 400 });
     }
 
-    const { shipName, spaceshipId, websiteUrl, tagline, description, orbitTags = [], iconUrl, screenshotUrl } = parsed.data;
+    const { shipName, spaceshipId, websiteUrl, tagline, description, orbitTags = [], iconUrl, screenshotUrl, commanderName, roles = [], status = 'Launched', xHandle, instagramHandle, githubHandle, youtubeUrl } = parsed.data;
     const vehicle = getVehicleById(spaceshipId);
     if (!vehicle) {
       return NextResponse.json({ error: 'unknown-vehicle' }, { status: 400 });
@@ -48,7 +56,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Determine orbit parameters based on vehicle type - TRUE 3D ORBITAL MECHANICS
-    const isPaid = vehicle.price > 0;
     
     // True 3D orbital parameters for satellite-like behavior
     const orbit_radius = 4 + Math.random() * 2; // 4-6 for safe distance from planet (was 2-3.5)
@@ -60,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabase.from('ships').insert({
       user_id: user.id,
-      website_url: websiteUrl,
+      website_url: websiteUrl ?? null,
       name: shipName,
       tagline,
       description,
@@ -75,6 +82,14 @@ export async function POST(req: NextRequest) {
       price: vehicle.price, // Use the actual price from vehicle data
       icon_url: iconUrl,
       screenshot_url: screenshotUrl,
+      // New metadata
+      commander_name: commanderName ?? null,
+      roles,
+      status,
+      x_handle: xHandle ?? null,
+      instagram_handle: instagramHandle ?? null,
+      github_handle: githubHandle ?? null,
+      youtube_url: youtubeUrl ?? null,
     }).select().single();
 
     if (error) {

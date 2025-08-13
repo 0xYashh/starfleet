@@ -51,14 +51,14 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
 
         // Fetch related profiles in one query
         const userIds = Array.from(new Set(baseShips.map((s) => s.user_id)));
-        let profileMap = new Map<string, Profile>();
+        const profileMap = new Map<string, Profile>();
         if (userIds.length > 0) {
           const { data: profilesRows, error: profilesError } = await supabase
             .from('profiles')
             .select('id, x_handle, instagram_handle, display_name')
             .in('id', userIds);
           if (profilesError) throw profilesError;
-          (profilesRows || []).forEach((p: any) => {
+          (profilesRows || []).forEach((p: { id: string; x_handle?: string; instagram_handle?: string; display_name?: string }) => {
             profileMap.set(p.id, {
               x_handle: p.x_handle ?? null,
               instagram_handle: p.instagram_handle ?? null,

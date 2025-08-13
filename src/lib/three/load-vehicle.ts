@@ -2,7 +2,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import * as THREE from 'three';
 import type { VehicleAsset } from '@/lib/data/spaceships';
-import type { GLTF } from 'three-stdlib';
 
 // Initialize GLTF loader with Draco compression support
 const gltfLoader = new GLTFLoader();
@@ -52,20 +51,20 @@ export async function loadVehicle(asset: VehicleAsset): Promise<THREE.Group> {
   }
 }
 
-function findFirstMesh(obj: any): any {
+function findFirstMesh(obj: THREE.Object3D): THREE.Mesh | null {
   console.log(`[findFirstMesh] Analyzing object:`, obj.type, obj.name || 'unnamed');
   
   if (obj.type === 'Mesh') {
-    console.log(`[findFirstMesh] Found mesh:`, obj.name || 'unnamed', 'geometry:', obj.geometry?.type, 'material:', obj.material?.type);
-    return obj;
+    console.log(`[findFirstMesh] Found mesh:`, obj.name || 'unnamed', 'geometry:', (obj as THREE.Mesh).geometry?.type, 'material:', (obj as THREE.Mesh).material);
+    return obj as THREE.Mesh;
   }
   
   // Count all meshes in the scene for debugging
   let meshCount = 0;
-  obj.traverse((child: any) => {
+  obj.traverse((child: THREE.Object3D) => {
     if (child.type === 'Mesh') {
       meshCount++;
-      console.log(`[findFirstMesh] Mesh ${meshCount}:`, child.name || `unnamed-${meshCount}`, 'geometry:', child.geometry?.type, 'material:', child.material?.type);
+      console.log(`[findFirstMesh] Mesh ${meshCount}:`, child.name || `unnamed-${meshCount}`, 'geometry:', (child as THREE.Mesh).geometry?.type, 'material:', (child as THREE.Mesh).material);
     }
   });
   
@@ -118,23 +117,23 @@ export async function preloadVehicles(assets: VehicleAsset[]): Promise<Map<strin
       if (asset.price > 0) {
         console.log(`[PreloadVehicles] Paid spaceship ${asset.id}: trying localPath first: ${asset.localPath}`);
         try {
-          gltf = (await loader.loadAsync(asset.localPath)) as any;
+          gltf = await loader.loadAsync(asset.localPath);
           console.log(`[PreloadVehicles] ✅ Successfully loaded ${asset.id} from localPath`);
         } catch (localError) {
           console.warn(`[PreloadVehicles] LocalPath failed for paid spaceship ${asset.id}, falling back to remoteUrl`, localError);
           console.log(`[PreloadVehicles] Attempting remoteUrl for ${asset.id}: ${asset.remoteUrl}`);
-          gltf = (await loader.loadAsync(asset.remoteUrl)) as any;
+          gltf = await loader.loadAsync(asset.remoteUrl);
           console.log(`[PreloadVehicles] ✅ Successfully loaded ${asset.id} from remoteUrl`);
         }
       } else {
         // For free ships, keep the original logic (remote first)
         try {
           console.log(`[PreloadVehicles] Free ship ${asset.id}: trying remoteUrl: ${asset.remoteUrl}`);
-          gltf = (await loader.loadAsync(asset.remoteUrl)) as any;
+          gltf = await loader.loadAsync(asset.remoteUrl);
           console.log(`[PreloadVehicles] ✅ Successfully loaded ${asset.id} from remoteUrl`);
         } catch (remoteError) {
           console.warn(`[PreloadVehicles] RemoteUrl failed for ${asset.id}, falling back to localPath: ${asset.localPath}`, remoteError);
-          gltf = (await loader.loadAsync(asset.localPath)) as any;
+          gltf = await loader.loadAsync(asset.localPath);
           console.log(`[PreloadVehicles] ✅ Successfully loaded ${asset.id} from localPath`);
         }
       }

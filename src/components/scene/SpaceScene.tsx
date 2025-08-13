@@ -97,7 +97,12 @@ export function SpaceScene() {
         camera={{ position: [0, 0, 15], fov: 45 }}
         className="pointer-events-auto"
       >
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <mesh>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#000000" transparent opacity={0} />
+          </mesh>
+        }>
           <Environment />
           <CameraManager />
           <InteractionManager />

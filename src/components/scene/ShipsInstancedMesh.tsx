@@ -12,9 +12,25 @@ import { ShipLabel } from './ShipLabel';
 import { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
 import { shipPositions } from '@/lib/three/ship-positions';
 
-const tempObject = new Object3D();
-const allAssets = [...getFreeVehicles(), ...getPaidVehicles()];
-const SCALE = 0.2; // Good size - not too big, not too small
+// Removed unused constants
+
+// Ship scale configuration - easy to tweak individual ships
+const SHIP_SCALES: Record<string, number> = {
+  // Free Aircraft
+  'jet': 0.01,
+  'airship': 0.004,
+  
+  // Paid Spaceships
+  'air-police': 0.15,
+  'colored-freighter': 0.30,
+  'x-wing-2': 0.3,
+  'x-wing': 0.45,
+  'ship-1': 0.003, // Stardust Cruiser
+  'ship-2': 0.15,
+  'ship-3': 0.15,
+  'ship-4': 0.15,
+  'ship-5': 0.15,
+};
 
 // Ship instances - one per ship in database
 const shipInstances = new Map<string, { 
@@ -40,7 +56,7 @@ function ShipInstance({ ship, asset }: { ship: Ship; asset: VehicleAsset }) {
         shipInstances.delete(ship.id);
       };
     }
-  }, [ship.id, asset]);
+  }, [ship.id, ship, asset]);
 
   // Fallback loading logic like launch wizard
   useEffect(() => {
@@ -60,7 +76,7 @@ function ShipInstance({ ship, asset }: { ship: Ship; asset: VehicleAsset }) {
     }
   }, [gltfResult?.scene, loadError, modelUrl, asset.localPath, asset.remoteUrl, asset.id, asset.price]);
 
-  // Apply proper scaling and orientation like launch wizard
+    // Apply proper scaling and orientation like launch wizard
   useEffect(() => {
     if (!ref.current || !gltfResult?.scene) return;
     
@@ -72,16 +88,8 @@ function ShipInstance({ ship, asset }: { ship: Ship; asset: VehicleAsset }) {
       ref.current.clear();
       ref.current.add(clonedScene);
       
-      // Apply per-ship scaling for better balance
-      let scaleValue: number;
-      if (asset.category === 'aircraft') {
-        // Free aircraft models come in much larger world units, so downscale them heavily
-        // Make airship smaller than jet
-        scaleValue = asset.id === 'airship' ? 0.004 : 0.01;
-      } else {
-        // Spaceships have relatively consistent sizing
-        scaleValue = asset.id === 'air-police' ? 0.17 : 0.40;
-      }
+      // Get scale from configuration, fallback to default
+      const scaleValue = SHIP_SCALES[asset.id] ?? 0.20;
 
       ref.current.scale.setScalar(scaleValue);
       
@@ -100,7 +108,7 @@ function ShipInstance({ ship, asset }: { ship: Ship; asset: VehicleAsset }) {
     } catch (err) {
       console.error(`[ShipInstance] Error setting up ship ${ship.name}:`, err);
     }
-  }, [gltfResult?.scene, ship.name, asset.id]);
+  }, [gltfResult?.scene, ship.name, asset.id, asset.category]);
 
   if (!gltfResult?.scene) {
     return null; // Don't render anything if model isn't loaded
@@ -110,11 +118,9 @@ function ShipInstance({ ship, asset }: { ship: Ship; asset: VehicleAsset }) {
 }
 
 export function ShipsInstancedMesh() {
-  const { camera, scene } = useThree();
+  const { camera } = useThree();
   const labelGroupRef = useRef<Group>(null);
   const { ships, setShips, addShip } = useShipsStore();
-  const raycaster = useRef(new Raycaster());
-  const mouse = useRef(new Vector2());
   
   // Performance optimization: Only render ships within camera view
   const [visibleShips, setVisibleShips] = useState<Ship[]>([]);
