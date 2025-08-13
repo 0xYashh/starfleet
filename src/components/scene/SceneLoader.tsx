@@ -35,7 +35,7 @@ export function SceneLoader({ children }: SceneLoaderProps) {
 
   if (!isLoaded) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: '#101838' }}>
         <div className="text-white text-center max-w-sm">
           <div className="w-16 h-16 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6"></div>
           <h2 className="text-2xl font-bold [font-family:var(--font-barriecito)] mb-4">

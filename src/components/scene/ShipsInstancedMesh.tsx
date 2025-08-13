@@ -2,12 +2,12 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Object3D, Group, Vector3, Raycaster, Vector2, PointLight, AmbientLight } from 'three';
+import { Group, Vector3, PointLight, AmbientLight } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { useShipsStore } from '@/lib/three/useShipsStore';
 import { supabase } from '@/lib/supabase/client';
 import type { Ship } from '@/lib/types/ship';
-import { getFreeVehicles, getPaidVehicles, getVehicleById, VehicleAsset } from '@/lib/data/spaceships';
+import { getVehicleById, VehicleAsset } from '@/lib/data/spaceships';
 import { ShipLabel } from './ShipLabel';
 import { RealtimePostgresInsertPayload } from '@supabase/supabase-js';
 import { shipPositions } from '@/lib/three/ship-positions';

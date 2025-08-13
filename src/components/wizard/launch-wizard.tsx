@@ -376,7 +376,23 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     
     try {
       // Sanitize/normalize optional fields
-      const payload: any = {
+      const payload: {
+        shipName: string;
+        spaceshipId: string;
+        websiteUrl?: string;
+        tagline?: string;
+        description?: string;
+        commanderName?: string;
+        roles?: string[];
+        status?: string;
+        xHandle?: string;
+        instagramHandle?: string;
+        githubHandle?: string;
+        youtubeUrl?: string;
+        orbitTags?: string[];
+        iconUrl?: string;
+        screenshotUrl?: string;
+      } = {
         shipName,
         spaceshipId: selectedVehicleId,
         websiteUrl,
