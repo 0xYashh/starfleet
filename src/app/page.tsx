@@ -10,6 +10,7 @@ import { useCallback, useEffect } from 'react';
 import { SignInModal } from '@/components/auth/sign-in-modal';
 import Image from 'next/image';
 import { VoyagersModal } from '@/components/deploys/voyagers-modal';
+import { AboutModal } from '@/components/about/about-modal';
 import { useSearchParams } from 'next/navigation';
 import { ProfileModal } from '@/components/ship/profile-modal';
 import type { Ship } from '@/lib/types/ship';
@@ -22,6 +23,7 @@ function HomeContent() {
   const [showSignIn, setShowSignIn] = useState(false);
   // Removed Hangar feature – redeploy via Hangar no longer supported
   const [showVoyagers, setShowVoyagers] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [initialWizardData, setInitialWizardData] = useState<Ship | null>(null);
 
   // Simple auth success handling
@@ -91,6 +93,13 @@ function HomeContent() {
             >
               Voyagers
             </CartoonButton>
+            <CartoonButton
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowAbout(true)}
+            >
+              About
+            </CartoonButton>
             {/* Hangar feature removed */}
           </div>
         </div>
@@ -141,6 +150,7 @@ function HomeContent() {
       <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />
       {/* HangarModal removed */}
       <VoyagersModal open={showVoyagers} onOpenChange={setShowVoyagers} />
+      <AboutModal open={showAbout} onOpenChange={setShowAbout} />
       <ProfileModal />
       </div>
     </SceneLoader>
