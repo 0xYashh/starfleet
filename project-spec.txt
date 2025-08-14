@@ -5,7 +5,7 @@ Last updated: <DATE_PLACEHOLDER>
 ──────────────────────────────────
 1. CORE IDEA
 • Web-based 3-D experience: a vibrant alien-looking planet floating in space, rendered with Three.js.
-• Users can pay $5 to launch a personalised spaceship that orbits the planet forever.
+• Users can pay $2 to launch a personalised spaceship that orbits the planet forever.
 • Each spaceship represents a creator’s product/profile and is visible to all visitors in real time.
 
 2. TECH STACK
@@ -14,7 +14,7 @@ Frontend  : Next.js 14 (App Router) + React 18 + TypeScript (strict)
 Styling   : Tailwind CSS 3 + Shadcn UI / Radix primitives
 State     : Zustand (client) – minimal; rely on React Server Components elsewhere
 Backend   : Supabase (PostgreSQL, Realtime, Auth)
-Payments  : Dodo Payments API ($5 fixed price)
+Payments  : Dodo Payments API ($2 fixed price)
 Deploy    : Vercel (edge functions, CDN)
 
 3. 3-D ASSETS (./public/models/)
@@ -28,15 +28,15 @@ Deploy    : Vercel (edge functions, CDN)
 **PAID SPACESHIPS (Higher Orbit)**
 | id                | file name (GLB)                 | size   | price |
 | ----------------- | -------------------------------- | ------ | ----- |
-| air-police        | Air Police – High Speed.glb      | ~9.5 MB | $5   |
-| colored-freighter | Colored Freighter.glb            | ~2.9 MB | $5   |
-| flying-saucer     | Flying saucer.glb                | ~0.35 MB| $5   |
-| x-wing            | T-65 X-Wing Starfighter.glb       | ~0.30 MB| $5   |
-| ship-4            | Spaceship 4.glb                  | ~0.18 MB| $5   |
-| ship-3            | Spaceship 3.glb                  | ~0.10 MB| $5   |
-| ship-2            | Spaceship 2.glb                  | ~0.16 MB| $5   |
-| ship-1            | Spaceship.glb (low-poly)         | ~0.02 MB| $5   |
-| ship-5            | spaceship 5.glb                  | ~0.34 MB| $5   |
+| air-police        | Air Police – High Speed.glb      | ~9.5 MB | $2   |
+| colored-freighter | Colored Freighter.glb            | ~2.9 MB | $2   |
+| flying-saucer     | Flying saucer.glb                | ~0.35 MB| $2   |
+| x-wing            | T-65 X-Wing Starfighter.glb       | ~0.30 MB| $2   |
+| ship-4            | Spaceship 4.glb                  | ~0.18 MB| $2   |
+| ship-3            | Spaceship 3.glb                  | ~0.10 MB| $2   |
+| ship-2            | Spaceship 2.glb                  | ~0.16 MB| $2   |
+| ship-1            | Spaceship.glb (low-poly)         | ~0.02 MB| $2   |
+| ship-5            | spaceship 5.glb                  | ~0.34 MB| $2   |
 
 **Pricing Model:** Free aircraft orbit in lower atmosphere, paid spaceships orbit in higher space. Large models will be Draco-compressed before commit to stay under bundle budgets.
 
@@ -56,10 +56,10 @@ products table → renamed logical concept “ships”.
   inclination real                   -- radians
   phase real                         -- radians (0-2π)
   angular_speed real                 -- rad·s⁻¹
-  price integer NOT NULL DEFAULT 0  -- 0 for free aircraft, 5 for spaceships
+  price integer NOT NULL DEFAULT 0  -- 0 for free aircraft, 2 for spaceships
   created_at timestamp
 ```
-payments table: `amount` is 0 for free aircraft, 5 for paid spaceships. Free launches skip payment flow entirely.
+payments table: `amount` is 0 for free aircraft, 2 for paid spaceships. Free launches skip payment flow entirely.
 
 5. USER FLOW (CLIENT)
 1. Landing page shows planet, starry sky, ships orbiting (instanced).
@@ -67,7 +67,7 @@ payments table: `amount` is 0 for free aircraft, 5 for paid spaceships. Free lau
 3. Modal Step 1 – enter product details & optional images (validated with Zod).
 4. Modal Step 2 – choose vehicle type:
    **FREE AIRCRAFT (Lower Orbit):** Airplane or Airship models (No payment required)
-   **PAID SPACESHIPS (Higher Orbit - $5):** 9 spaceship models to choose from
+   **PAID SPACESHIPS (Higher Orbit - $2):** 9 spaceship models to choose from
 5. Launch Flow:
    **For Free Aircraft:** Direct launch → creates `products` row with price=0, broadcasts via Supabase Realtime
    **For Paid Spaceships:** Call `/api/create-payment-link` → user pays → webhook verifies → creates records

@@ -196,20 +196,26 @@ export function ShipsInstancedMesh() {
       const angularSpeed = Math.abs(baseAngularSpeed) < minAngularSpeed
         ? Math.sign(baseAngularSpeed || 1) * minAngularSpeed
         : baseAngularSpeed;
-      const theta = ship.phase + angularSpeed * elapsedTime;
+
+      // Safely handle possibly-null DB values
+      const orbitRadius = ship.orbit_radius ?? 0;
+      const inclination = ship.inclination ?? 0;
+      const ascendingNode = ship.ascending_node ?? 0;
+      const eccentricity = ship.eccentricity ?? 0.1;
+      const phase = ship.phase ?? 0;
+
+      const theta = phase + angularSpeed * elapsedTime;
       
-      // Calculate eccentric orbit position with fallbacks for existing ships
-      const eccentricity = ship.eccentricity || 0.1;
-      const ascending_node = ship.ascending_node || 0;
-      const r = ship.orbit_radius * (1 - eccentricity * Math.cos(theta));
+      // Calculate eccentric orbit position
+      const r = orbitRadius * (1 - eccentricity * Math.cos(theta));
       const x_orbital = r * Math.cos(theta);
       const y_orbital = r * Math.sin(theta);
       
       // Apply 3D orbital plane transformation
-      const cos_node = Math.cos(ascending_node);
-      const sin_node = Math.sin(ascending_node);
-      const cos_incl = Math.cos(ship.inclination);
-      const sin_incl = Math.sin(ship.inclination);
+      const cos_node = Math.cos(ascendingNode);
+      const sin_node = Math.sin(ascendingNode);
+      const cos_incl = Math.cos(inclination);
+      const sin_incl = Math.sin(inclination);
       
       // Transform from orbital plane to 3D space
       const x_temp = x_orbital * cos_node - y_orbital * sin_node;
@@ -234,7 +240,7 @@ export function ShipsInstancedMesh() {
       
       // Calculate velocity vector for proper orientation
       const v_theta = angularSpeed;
-      const v_r = ship.orbit_radius * eccentricity * v_theta * Math.sin(theta);
+      const v_r = orbitRadius * eccentricity * v_theta * Math.sin(theta);
       const v_orbital_x = -r * v_theta * Math.sin(theta) + v_r * Math.cos(theta);
       const v_orbital_y = r * v_theta * Math.cos(theta) + v_r * Math.sin(theta);
       
@@ -300,7 +306,7 @@ export function ShipsInstancedMesh() {
       ref.current.rotation.y += 0.005;
       
       // Add slight bobbing motion
-      const bobHeight = Math.sin(elapsedTime * 1.2 + ship.phase) * 0.03;
+      const bobHeight = Math.sin(elapsedTime * 1.2 + phase) * 0.03;
       ref.current.position.y += bobHeight;
 
       // Store position for camera system
@@ -312,17 +318,21 @@ export function ShipsInstancedMesh() {
       ships.forEach((ship, i) => {
         const label = labelGroupRef.current?.children[i] as Group;
         if (label) {
-          const theta = ship.phase + ship.angular_speed * elapsedTime;
-          const eccentricity = ship.eccentricity || 0.1;
-          const ascending_node = ship.ascending_node || 0;
-          const r = ship.orbit_radius * (1 - eccentricity * Math.cos(theta));
-          const x_orbital = r * Math.cos(theta);
-          const y_orbital = r * Math.sin(theta);
+          const labelPhase = ship.phase ?? 0;
+          const labelAngularSpeed = ship.angular_speed ?? 0;
+          const labelTheta = labelPhase + labelAngularSpeed * elapsedTime;
+          const eccentricity = ship.eccentricity ?? 0.1;
+          const ascendingNode = ship.ascending_node ?? 0;
+          const orbitRadius = ship.orbit_radius ?? 0;
+          const inclination = ship.inclination ?? 0;
+          const r = orbitRadius * (1 - eccentricity * Math.cos(labelTheta));
+          const x_orbital = r * Math.cos(labelTheta);
+          const y_orbital = r * Math.sin(labelTheta);
           
-          const cos_node = Math.cos(ascending_node);
-          const sin_node = Math.sin(ascending_node);
-          const cos_incl = Math.cos(ship.inclination);
-          const sin_incl = Math.sin(ship.inclination);
+          const cos_node = Math.cos(ascendingNode);
+          const sin_node = Math.sin(ascendingNode);
+          const cos_incl = Math.cos(inclination);
+          const sin_incl = Math.sin(inclination);
           
           const x_temp = x_orbital * cos_node - y_orbital * sin_node;
           const y_temp = x_orbital * sin_node + y_orbital * cos_node;
@@ -331,7 +341,7 @@ export function ShipsInstancedMesh() {
           const y = y_temp * cos_incl;
           const z = y_temp * sin_incl;
           
-          const bobHeight = Math.sin(elapsedTime * 1.2 + ship.phase) * 0.03;
+          const bobHeight = Math.sin(elapsedTime * 1.2 + labelPhase) * 0.03;
           label.position.set(x, y + bobHeight, z);
           
           // Safety check: Prevent labels from going inside the planet

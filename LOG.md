@@ -51,7 +51,8 @@ npm install class-variance-authority clsx tailwind-merge
 - **3D Graphics:** Three.js, @react-three/fiber, @react-three/drei
 - **State Management:** Zustand
 - **File Storage:** UploadThing
-- **Database:** Supabase
+- **Database:** Supabase (PostgreSQL, Realtime, Auth)
+- **Payments:** Dodo Payments API ($2 fixed price)
 - **UI Utilities:** CVA, clsx, tailwind-merge
 
 ### ✅ Shadcn UI Setup
@@ -93,7 +94,7 @@ src/
 - **VehicleAsset Interface** - TypeScript interface for vehicle data
 - **Two-Tier System:**
   - **Free Aircraft:** 2 models (airplane, airship) - radius 4-5
-  - **Paid Spaceships:** 9 models - radius 6-8, $5 each
+  - **Paid Spaceships:** 9 models - radius 6-8, $2 each
 - **Helper Functions:**
   - `getFreeVehicles()`
   - `getPaidVehicles()`

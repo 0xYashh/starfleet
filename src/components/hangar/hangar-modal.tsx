@@ -12,7 +12,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Ship } from '@/lib/types/ship';
-import Image from 'next/image';
+import Image from 'next/image';   
 
 interface HangarModalProps {
   open: boolean;
@@ -32,18 +32,58 @@ export function HangarModal({ open, onOpenChange, onSelectShip }: HangarModalPro
       try {
         const { data, error } = await supabase
           .from('ships')
-          .select('*')
+          .select(`
+            id,
+            user_id,
+            website_url,
+            name,
+            tagline,
+            description,
+            spaceship_id,
+            orbit_radius,
+            inclination,
+            phase,
+            angular_speed,
+            price,
+            created_at,
+            icon_url,
+            screenshot_url,
+            commander_name,
+            roles,
+            status,
+            x_handle,
+            instagram_handle,
+            github_handle,
+            youtube_url
+          `)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
         // Deduplicate ships by spaceship_id to show only one of each type
-        const uniqueShips = data.filter((ship, index, self) =>
+        const uniqueShips = (data || []).filter((ship, index, self) =>
           index === self.findIndex((s) => s.spaceship_id === ship.spaceship_id)
         );
-        setShips(uniqueShips || []);
+        
+        // Transform data to match Ship interface
+        const transformedShips: Ship[] = uniqueShips.map(ship => ({
+          ...ship,
+          orbit_tags: [], // Default empty array since it's not in database
+          orbit_radius: ship.orbit_radius || 0,
+          inclination: ship.inclination || 0,
+          phase: ship.phase || 0,
+          angular_speed: ship.angular_speed || 0,
+          roles: ship.roles || [],
+        }));
+        
+        setShips(transformedShips);
       } catch (error) {
         console.error('Error loading hangar ships:', error);
+        setShips([]); // Set empty array on error
       } finally {
         setLoading(false);
       }

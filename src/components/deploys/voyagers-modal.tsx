@@ -39,41 +39,75 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
     async function loadRecentDeploys() {
       setLoading(true);
       try {
-        // Fetch recent ships
-        const { data: shipRows, error: shipsError } = await supabase
+        // Fetch recent ships with profiles in a single query using join
+        const { data: shipsWithProfiles, error: shipsError } = await supabase
           .from('ships')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20);
+          .select(`
+            id,
+            user_id,
+            website_url,
+            name,
+            tagline,
+            description,
+            spaceship_id,
+            orbit_radius,
+            inclination,
+            phase,
+            angular_speed,
+            price,
+            created_at,
+            icon_url,
+            screenshot_url,
+            commander_name,
+            roles,
+            status,
+            x_handle,
+            instagram_handle,
+            github_handle,
+            youtube_url,
+            profiles:user_id (
+              x_handle,
+              instagram_handle,
+              display_name
+            )
+          `)
+          // Only fetch the five most recent voyagers
+          .limit(5);
 
-        if (shipsError) throw shipsError;
-        const baseShips = (shipRows as Ship[]) || [];
-
-        // Fetch related profiles in one query
-        const userIds = Array.from(new Set(baseShips.map((s) => s.user_id)));
-        const profileMap = new Map<string, Profile>();
-        if (userIds.length > 0) {
-          const { data: profilesRows, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, x_handle, instagram_handle, display_name')
-            .in('id', userIds);
-          if (profilesError) throw profilesError;
-          (profilesRows || []).forEach((p: { id: string; x_handle?: string; instagram_handle?: string; display_name?: string }) => {
-            profileMap.set(p.id, {
-              x_handle: p.x_handle ?? null,
-              instagram_handle: p.instagram_handle ?? null,
-              display_name: p.display_name ?? null,
-            });
-          });
+        if (shipsError) {
+          console.error('Supabase error:', shipsError);
+          throw shipsError;
         }
 
-        const withProfiles: ShipWithProfile[] = baseShips.map((s) => ({
-          ...(s as Ship),
-          profiles: profileMap.get(s.user_id) ?? null,
-        }));
-        setShips(withProfiles);
+        // Transform the data to match our types
+        const transformedShips: ShipWithProfile[] = (shipsWithProfiles || []).map((ship: any) => {
+          // Extract profile data
+          const profile = ship.profiles || null;
+          
+          // Transform ship data to match Ship interface
+          const transformedShip: Ship = {
+            ...ship,
+            orbit_tags: [], // Default empty array since it's not in database
+            orbit_radius: ship.orbit_radius || 0,
+            inclination: ship.inclination || 0,
+            phase: ship.phase || 0,
+            angular_speed: ship.angular_speed || 0,
+            roles: ship.roles || [],
+          };
+          
+          // Remove the profiles property from ship object
+          delete (transformedShip as any).profiles;
+          
+          return {
+            ...transformedShip,
+            profiles: profile,
+          };
+        });
+
+        setShips(transformedShips);
       } catch (error) {
         console.error('Error loading voyagers:', error);
+        setShips([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -84,16 +118,10 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
     }
   }, [open]);
 
+  // Clicking a voyager opens its profile modal directly
   const handleVoyagerClick = (ship: ShipWithProfile) => {
-    const profile = ship.profiles;
-    if (profile?.x_handle) {
-      window.open(`https://x.com/${profile.x_handle}`, '_blank');
-    } else if (profile?.instagram_handle) {
-      window.open(`https://instagram.com/${profile.instagram_handle}`, '_blank');
-    } else {
-      setSelectedShip(ship);
-      onOpenChange(false);
-    }
+    setSelectedShip(ship);
+    onOpenChange(false);
   };
 
   return (
@@ -120,24 +148,32 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
             <div className="grid grid-cols-2 gap-4">
               {ships.map((ship) => {
                 const vehicle = getVehicleById(ship.spaceship_id);
-                const profile = ship.profiles;
-                let handle = profile?.display_name || 'Anonymous';
-                if (profile?.x_handle) handle = `@${profile.x_handle}`;
-                else if (profile?.instagram_handle) handle = `@${profile.instagram_handle}`;
+                const commanderName = ship.commander_name || 'Unknown Commander';
+
+                // Prefer vehicle-specific logo; fallback to generic icon
+                const logoSrc = vehicle?.previewPng || ship.icon_url;
 
                 return (
-                  <div key={ship.id} onClick={() => handleVoyagerClick(ship)} className="p-3 bg-black/20 rounded-lg flex flex-col items-center text-center gap-2 hover:bg-white/10 transition-colors cursor-pointer">
-                    <div className="w-16 h-16 rounded-md bg-black/20 flex-shrink-0">
-                      {ship.icon_url ? (
-                        <Image src={ship.icon_url} alt={ship.name} width={64} height={64} className="rounded-md object-cover" unoptimized />
+                  <div
+                    key={ship.id}
+                    onClick={() => handleVoyagerClick(ship)}
+                    className="p-3 bg-black/20 rounded-lg flex flex-col items-center text-center gap-2 hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    <div className="w-20 h-20 rounded-md bg-black/20 flex-shrink-0 flex items-center justify-center">
+                      {logoSrc ? (
+                        <Image
+                          src={logoSrc}
+                          alt={vehicle?.label || ship.name}
+                          width={80}
+                          height={80}
+                          className="rounded-md object-contain"
+                          unoptimized
+                        />
                       ) : (
-                        <span className="text-3xl w-full h-full flex items-center justify-center">{vehicle?.category === 'aircraft' ? '✈️' : '🚀'}</span>
+                        <span className="text-4xl">{vehicle?.category === 'aircraft' ? '✈️' : '🚀'}</span>
                       )}
                     </div>
-                    <div>
-                      <p className="font-bold text-sm">{ship.name}</p>
-                      <p className="text-xs text-white/70">{handle}</p>
-                    </div>
+                    <p className="font-bold text-sm truncate max-w-[8rem]">{commanderName}</p>
                   </div>
                 );
               })}

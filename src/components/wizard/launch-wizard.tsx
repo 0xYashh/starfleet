@@ -288,7 +288,7 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
       </div>
       
       <div>
-        <h3 className="text-xl font-bold">🚀 Paid Spaceships ($5)</h3>
+        <h3 className="text-xl font-bold">🚀 Paid Spaceships ($2)</h3>
         {/* <p className="text-sm text-white/70">Soar into the higher orbit space layer.</p> */}
         <div className="relative group">
           <div className="overflow-hidden" ref={emblaRef}>
@@ -298,7 +298,7 @@ const ChooseVehicleStep = ({ selectedVehicleId, setSelectedVehicleId }: {
                   <div onClick={() => setSelectedVehicleId(vehicle.id)} className={cn("p-2 rounded-lg border-2 cursor-pointer transition-colors", selectedVehicleId === vehicle.id ? 'border-blue-400 bg-blue-500/20' : 'border-transparent hover:bg-white/10')}>
                     <VehiclePreview asset={vehicle} />
                     <p className="font-semibold mt-2 text-center">{vehicle.label}</p>
-                    <p className="text-sm text-center text-yellow-400">$5</p>
+                    <p className="text-sm text-center text-yellow-400">$2</p>
                   </div>
                 </div>
               ))}
@@ -447,9 +447,18 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     }
     const vehicle = getVehicleById(selectedVehicleId);
     if (!vehicle) {
-        return 'Deploy';
+      return 'Deploy';
     }
-    return vehicle.price === 0 ? 'Deploy for Free' : 'Proceed to Payment'; // Future-proofed
+
+    // If the user is redeploying a ship they already own (opened from Hangar),
+    // allow free redeployment even for paid vehicles.
+    const alreadyOwned = initialData && initialData.spaceship_id === selectedVehicleId;
+
+    if (vehicle.price === 0 || alreadyOwned) {
+      return 'Deploy for Free';
+    }
+
+    return 'Proceed to Payment'; // Future-proofed when real payments are added
   };
 
   return (

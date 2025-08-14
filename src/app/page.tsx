@@ -9,7 +9,6 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { useCallback, useEffect } from 'react';
 import { SignInModal } from '@/components/auth/sign-in-modal';
 import Image from 'next/image';
-import { HangarModal } from '@/components/hangar/hangar-modal';
 import { VoyagersModal } from '@/components/deploys/voyagers-modal';
 import { useSearchParams } from 'next/navigation';
 import { ProfileModal } from '@/components/ship/profile-modal';
@@ -21,7 +20,7 @@ function HomeContent() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
-  const [showHangar, setShowHangar] = useState(false);
+  // Removed Hangar feature – redeploy via Hangar no longer supported
   const [showVoyagers, setShowVoyagers] = useState(false);
   const [initialWizardData, setInitialWizardData] = useState<Ship | null>(null);
 
@@ -46,10 +45,7 @@ function HomeContent() {
     await signOut();
   }, [signOut]);
 
-  const handleHangarSelect = (ship: Ship) => {
-    setInitialWizardData(ship);
-    setShowWizard(true);
-  };
+  // Removed Hangar feature – redeploy via Hangar no longer supported
 
   return (
     <SceneLoader>
@@ -95,15 +91,7 @@ function HomeContent() {
             >
               Voyagers
             </CartoonButton>
-            {user && (
-              <CartoonButton
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowHangar(true)}
-              >
-                Hangar
-              </CartoonButton>
-            )}
+            {/* Hangar feature removed */}
           </div>
         </div>
         
@@ -151,11 +139,7 @@ function HomeContent() {
         initialData={initialWizardData}
       />
       <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />
-      <HangarModal 
-        open={showHangar} 
-        onOpenChange={setShowHangar}
-        onSelectShip={handleHangarSelect}
-      />
+      {/* HangarModal removed */}
       <VoyagersModal open={showVoyagers} onOpenChange={setShowVoyagers} />
       <ProfileModal />
       </div>

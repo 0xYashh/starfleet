@@ -5,19 +5,20 @@ export interface Ship {
   name: string;
   tagline: string | null;
   description: string | null;
-  orbit_tags: string[];
+  orbit_tags?: string[]; // This might not be in all database records
   spaceship_id: string;
-  orbit_radius: number;
-  inclination: number;
-  phase: number;
-  ascending_node: number;
-  eccentricity: number;
-  angular_speed: number;
+  orbit_radius: number | null;
+  inclination: number | null;
+  phase: number | null;
+  ascending_node?: number | null; // This might not be in database
+  eccentricity?: number | null; // This might not be in database
+  angular_speed: number | null;
   price: number;
   created_at: string;
+  updated_at?: string;
   icon_url: string | null;
   screenshot_url: string | null;
-  // New metadata from Launch Wizard
+  // Extended metadata from Launch Wizard
   commander_name?: string | null;
   roles?: string[];
   status?: 'Building' | 'Launched';
