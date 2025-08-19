@@ -70,18 +70,28 @@ export function HangarModal({ open, onOpenChange, onSelectShip }: HangarModalPro
         );
         
         // Transform data to match Ship interface
-        const transformedShips: Ship[] = uniqueShips.map(ship => ({
-          ...ship,
-          orbit_tags: [], // Default empty array since it's not in database
-          orbit_radius: ship.orbit_radius || 0,
-          inclination: ship.inclination || 0,
-          phase: ship.phase || 0,
-          angular_speed: ship.angular_speed || 0,
-          roles: ship.roles || [],
-          ascending_node: (ship as any).ascending_node ?? 0,
-          eccentricity: (ship as any).eccentricity ?? 0,
-          updated_at: (ship as any).updated_at ?? new Date().toISOString(),
-        }));
+        type ShipExtras = {
+          ascending_node?: number;
+          eccentricity?: number;
+          updated_at?: string;
+        };
+
+        const transformedShips: Ship[] = uniqueShips.map((ship) => {
+          const extras = ship as unknown as ShipExtras;
+
+          return {
+            ...ship,
+            orbit_tags: [], // Default empty array since it's not in database
+            orbit_radius: ship.orbit_radius || 0,
+            inclination: ship.inclination || 0,
+            phase: ship.phase || 0,
+            angular_speed: ship.angular_speed || 0,
+            roles: ship.roles || [],
+            ascending_node: extras.ascending_node ?? 0,
+            eccentricity: extras.eccentricity ?? 0,
+            updated_at: extras.updated_at ?? new Date().toISOString(),
+          };
+        });
         
         setShips(transformedShips);
       } catch (error) {
