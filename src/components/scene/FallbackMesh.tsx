@@ -26,11 +26,18 @@ export function FallbackMesh({ scene, ship, scale }: FallbackMeshProps) {
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const elapsedTime = clock.getElapsedTime();
-    const theta = ship.phase + ship.angular_speed * elapsedTime;
-    const x = ship.orbit_radius * Math.cos(theta);
-    const y = ship.orbit_radius * Math.sin(theta);
-    const z = y * Math.sin(ship.inclination);
-    const posY = y * Math.cos(ship.inclination);
+
+    // Defensive defaults: fall back to 0 if any orbital param is null/undefined
+    const phase = ship.phase ?? 0;
+    const angularSpeed = ship.angular_speed ?? 0;
+    const orbitRadius = ship.orbit_radius ?? 0;
+    const inclination = ship.inclination ?? 0;
+
+    const theta = phase + angularSpeed * elapsedTime;
+    const x = orbitRadius * Math.cos(theta);
+    const y = orbitRadius * Math.sin(theta);
+    const z = y * Math.sin(inclination);
+    const posY = y * Math.cos(inclination);
     ref.current.position.set(x, posY, z);
     ref.current.scale.set(scale, scale, scale);
     // Debug log for position and scale
