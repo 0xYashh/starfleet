@@ -78,6 +78,9 @@ export function HangarModal({ open, onOpenChange, onSelectShip }: HangarModalPro
           phase: ship.phase || 0,
           angular_speed: ship.angular_speed || 0,
           roles: ship.roles || [],
+          ascending_node: (ship as any).ascending_node ?? 0,
+          eccentricity: (ship as any).eccentricity ?? 0,
+          updated_at: (ship as any).updated_at ?? new Date().toISOString(),
         }));
         
         setShips(transformedShips);
