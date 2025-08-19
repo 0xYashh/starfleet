@@ -11,6 +11,22 @@ export function SceneLoader({ children }: SceneLoaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
+    // Check if user is returning from payment (skip loading screen)
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipLoadingFlag = sessionStorage.getItem('skipLoadingScreen');
+    const isReturningFromPayment = urlParams.get('welcome') === '1' || 
+                                   skipLoadingFlag === 'true' ||
+                                   sessionStorage.getItem('welcomeCommander') ||
+                                   document.referrer.includes('dodopayments.com');
+
+    if (isReturningFromPayment) {
+      // Skip loading screen entirely for payment returns
+      setIsLoaded(true);
+      // Clear the flag so it doesn't affect future page loads
+      sessionStorage.removeItem('skipLoadingScreen');
+      return;
+    }
+
     // Simulate loading progress for 3D universe preparation
     const progressInterval = setInterval(() => {
       setLoadingProgress(prev => {

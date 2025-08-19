@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Dispatch, SetStateAction, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { UploadButton } from '@/lib/uploadthing';
 import Image from 'next/image';
 import type { Ship } from '@/lib/types/ship';
+import { supabase } from '@/lib/supabase/client';
 
 // --- Constants ---
 const ROLES = ['Founder','Developer','Designer','Artist','Explorer','Creator','Builder'];
@@ -322,6 +324,12 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
   const [direction, setDirection] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Force reset loading state on component mount
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   // --- Form State ---
   const [commanderName, setCommanderName] = useState('');
@@ -354,6 +362,19 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     }
   }, [initialData, open]); // Re-run when modal opens with new data
 
+  // Reset loading and error states when modal opens/closes
+  useEffect(() => {
+    if (open) {
+      setIsLoading(false);
+      setError(null);
+    } else {
+      // Reset all states when modal closes
+      setIsLoading(false);
+      setError(null);
+      setStep(1);
+    }
+  }, [open]);
+
   // --- Handlers ---
   function handleRoleChange(role: string) {
     setSelectedRoles((prev) =>
@@ -376,7 +397,7 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
     
     try {
       // Sanitize/normalize optional fields
-      const payload: {
+      const shipPayload: {
         shipName: string;
         spaceshipId: string;
         websiteUrl?: string;
@@ -395,7 +416,7 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
       } = {
         shipName,
         spaceshipId: selectedVehicleId,
-        websiteUrl,
+        websiteUrl: websiteUrl || 'https://starfleet.space',
         tagline: missionTagline || undefined,
         description: missionBrief || undefined,
         orbitTags,
@@ -410,10 +431,76 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
         youtubeUrl: youtubeUrl && /^https?:\/\//i.test(youtubeUrl) ? youtubeUrl : undefined,
       };
 
+      const vehicle = getVehicleById(selectedVehicleId);
+
+      if (vehicle && vehicle.price > 0) {
+        try {
+          console.log('🚀 Starting paid vehicle flow for:', vehicle.label);
+          
+          console.log('🔐 Getting user session...');
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user) {
+            console.log('❌ No user session found');
+            throw new Error('Please sign in to purchase a spaceship');
+          }
+          const email = session.user.email ?? 'customer@example.com';
+          const user_id = session.user.id;
+
+          console.log('✅ User session found:', { user_id, email });
+          console.log('💰 Creating payment link with ship data:', { 
+            shipName: shipPayload.shipName, 
+            spaceshipId: shipPayload.spaceshipId 
+          });
+
+          const createLinkRes = await fetch('/api/payments/create-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customer: { email, name: commanderName || session?.user?.user_metadata?.full_name || 'Pilot' },
+              vehicleType: 'spaceship',
+              shipData: shipPayload,
+              user_id,
+            }),
+          });
+
+          console.log('🌐 Payment link API response status:', createLinkRes.status);
+
+          if (!createLinkRes.ok) {
+            const errorText = await createLinkRes.text();
+            console.error('❌ Payment link error:', errorText);
+            throw new Error(`Payment link failed: ${errorText}`);
+          }
+
+          const linkJson = await createLinkRes.json();
+          console.log('✅ Payment link response:', linkJson);
+          
+          if (!linkJson.payment_link) {
+            console.log('❌ No payment link in response');
+            throw new Error('No payment link returned from server');
+          }
+
+          console.log('🎯 Redirecting to payment link:', linkJson.payment_link);
+          
+          // Clear loading and close modal before redirect
+          setIsLoading(false);
+          onOpenChange(false);
+          
+          // Small delay to ensure state is updated before redirect
+          setTimeout(() => {
+            window.location.href = linkJson.payment_link;
+          }, 100);
+          return;
+        } catch (paymentError) {
+          console.error('💥 Payment flow error:', paymentError);
+          throw paymentError; // Re-throw to be caught by main catch block
+        }
+      }
+
+      // Free flow -> direct deploy
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(shipPayload),
       });
 
       const result = await response.json();
@@ -422,9 +509,10 @@ export function LaunchWizard({ open, onOpenChange, initialData }: LaunchWizardPr
         throw new Error(result.error || 'Something went wrong');
       }
 
-      // Success! Close the modal.
+      // Store commander name for free deployments
+      sessionStorage.setItem('welcomeCommander', commanderName || 'Commander');
       onOpenChange(false);
-      // Optionally, you could show a success toast here.
+      router.push('/?welcome=1');
       
     } catch (err) {
       const error = err as Error;

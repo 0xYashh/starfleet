@@ -123,7 +123,9 @@ export function VehiclePreview({ asset }: { asset: VehicleAsset }) {
         }}
       >
         <Suspense fallback={null}>
-          <Stage environment="city" intensity={0.6} adjustCamera>
+          <Stage environment={null} intensity={0.6} adjustCamera>
+            <ambientLight intensity={0.4} />
+            <directionalLight position={[10, 10, 5]} intensity={1} />
             <Model asset={asset} isMobile={false} />
           </Stage>
         </Suspense>

@@ -95,7 +95,7 @@ pos.set(xʹ, yʹ * cos(inclination), yʹ * sin(inclination));
 ✔ Gradient space background (purple → indigo) as in `planetbackground.html`.
 ✔ Custom additive-blended star shader (colourful points).
 ✔ Alien planet texture (canvas-generated) + atmosphere shader.
-✔ Optional rings & multilayer clouds.
+✔ Optional rings & multilayer clouds. 
 ✖ No on-screen instructional text from the demo.
 
 8. PERFORMANCE TARGETS

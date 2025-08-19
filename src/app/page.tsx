@@ -26,16 +26,45 @@ function HomeContent() {
   const [showAbout, setShowAbout] = useState(false);
   const [initialWizardData, setInitialWizardData] = useState<Ship | null>(null);
 
-  // Simple auth success handling
+  // Welcome message handling
   useEffect(() => {
     const authSuccess = searchParams.get('auth_success');
+    const welcome = searchParams.get('welcome');
     
     if (authSuccess) {
       console.log('Authentication successful!');
       // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    if (welcome === '1') {
+      const commanderName = sessionStorage.getItem('welcomeCommander');
+      if (commanderName) {
+        // Show welcome toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-top-2';
+        toast.innerHTML = `🚀 Welcome to Starfleet, Commander ${commanderName}!`;
+        document.body.appendChild(toast);
+        
+        // Remove after 5 seconds
+        setTimeout(() => toast.remove(), 5000);
+        
+        // Clear session storage
+        sessionStorage.removeItem('welcomeCommander');
+        sessionStorage.removeItem('skipLoadingScreen'); // Also clear skip flag
+      }
+      
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, [searchParams]);
+
+  // Close sign-in modal automatically after successful login
+  useEffect(() => {
+    if (user) {
+      setShowSignIn(false);
+    }
+  }, [user]);
 
   // Reset sign-out loading state when user changes
   useEffect(() => {

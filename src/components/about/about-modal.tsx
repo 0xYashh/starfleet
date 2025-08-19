@@ -34,12 +34,13 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-2">
+        <div className="space-y-6 py-2 overflow-y-auto max-h-[60vh]">
           {/* Project overview */}
           <div className="p-4 rounded-lg bg-black/20 border border-white/20 space-y-3">
             <p className="text-sm leading-relaxed">
               Starfleet is a fun 3-D playground to launch your product and showcase what you are working on as spaceships orbiting a planet.
             </p>
+            <p className="image.pngtext-sm leading-relaxed">a product by <a href="https://pxlcorp.xyz" target="_blank" rel="noopener noreferrer" className="text-pink-500 font-semibold hover:text-pink-600 transition-colors ">pxlcorp</a>: an internet lab where we experiment and build cool stuffs.</p>
           </div>
           {/* Pricing policy */}
           <div className="p-4 rounded-lg bg-black/20 border border-white/20 space-y-2">
@@ -51,7 +52,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
           </div>
           <div className="p-4 rounded-lg bg-black/20 border border-white/20 flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-black/30 flex items-center justify-center text-3xl">
-              🚀
+              <Image src="/icon/starfleet.svg" alt="starfleet icon" width={64} height={64} />
             </div>
             <div>
               <p className="text-lg font-semibold">🧑‍🚀Commander at Starfleet</p>

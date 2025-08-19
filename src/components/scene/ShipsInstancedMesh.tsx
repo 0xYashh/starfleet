@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, Suspense } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Group, Vector3, PointLight, AmbientLight } from 'three';
 import { useGLTF } from '@react-three/drei';
@@ -366,13 +366,14 @@ export function ShipsInstancedMesh() {
           console.warn(`[ShipsInstancedMesh] No asset found for spaceship_id: ${ship.spaceship_id}`);
           return null;
         }
-        
+
         return (
-          <ShipInstance 
-            key={ship.id} 
-            ship={ship} 
-            asset={asset as VehicleAsset}
-          />
+          <Suspense key={ship.id} fallback={null}>
+            <ShipInstance 
+              ship={ship} 
+              asset={asset as VehicleAsset}
+            />
+          </Suspense>
         );
       })}
       

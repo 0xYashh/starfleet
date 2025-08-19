@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { getVehicleById } from '@/lib/data/spaceships';
+import { dodoPayments } from '@/lib/dodopayments/client';
 
 const DeployShipSchema = z.object({
   shipName: z.string().min(2, "Ship name must be at least 2 characters").max(100),
@@ -12,6 +13,8 @@ const DeployShipSchema = z.object({
   orbitTags: z.array(z.string()).max(3, "You can have a maximum of 3 tags").optional(),
   iconUrl: z.string().url().optional(),
   screenshotUrl: z.string().url().optional(),
+  // New field for payment verification
+  dodoPaymentId: z.string().optional(),
   // New wizard fields
   commanderName: z.string().max(120).optional(),
   roles: z.array(z.string()).max(8).optional(),
@@ -36,17 +39,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'invalid-payload', details: parsed.error.format() }, { status: 400 });
     }
 
-    const { shipName, spaceshipId, websiteUrl, tagline, description, orbitTags = [], iconUrl, screenshotUrl, commanderName, roles = [], status = 'Launched', xHandle, instagramHandle, githubHandle, youtubeUrl } = parsed.data;
+    const { shipName, spaceshipId, websiteUrl, tagline, description, orbitTags = [], iconUrl, screenshotUrl, commanderName, roles = [], status = 'Launched', xHandle, instagramHandle, githubHandle, youtubeUrl, dodoPaymentId } = parsed.data;
     const vehicle = getVehicleById(spaceshipId);
     if (!vehicle) {
       return NextResponse.json({ error: 'unknown-vehicle' }, { status: 400 });
     }
 
-    // FUTURE: When payment is integrated, this check will be important.
-    // For now, we allow paid ships to be deployed for testing purposes.
-    // if (vehicle.price > 0) {
-    //   // TODO: Verify payment status from a secure source
-    // }
+    // Verify payment for paid ships
+    if (vehicle.price > 0) {
+      if (!dodoPaymentId) {
+        return NextResponse.json({ error: 'payment-required' }, { status: 400 });
+      }
+      try {
+        const paymentObj = await dodoPayments.payments.retrieve(dodoPaymentId);
+        if (paymentObj.status !== 'succeeded') {
+          return NextResponse.json({ error: 'payment-not-successful' }, { status: 400 });
+        }
+      } catch (err) {
+        console.error('Payment verify failed:', err);
+        return NextResponse.json({ error: 'payment-verify-failed' }, { status: 400 });
+      }
+    }
 
     // Ensure a profile exists for the user before proceeding
     const { error: profileErr } = await supabase.from('profiles').upsert({ id: user.id, display_name: user.email?.split('@')[0] || 'Pilot' });
