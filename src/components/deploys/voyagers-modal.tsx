@@ -80,23 +80,27 @@ export function VoyagersModal({ open, onOpenChange }: VoyagersModalProps) {
         }
 
         // Transform the data to match our types
-        const transformedShips: ShipWithProfile[] = (shipsWithProfiles || []).map((ship: any) => {
+        const transformedShips: ShipWithProfile[] = (shipsWithProfiles || []).map((ship) => {
+          const shipRecord = ship as unknown as ShipWithProfile & { profiles?: unknown };
+          
           // Extract profile data
-          const profile = ship.profiles || null;
+          const profile = shipRecord.profiles || null;
           
           // Transform ship data to match Ship interface
           const transformedShip: Ship = {
-            ...ship,
+            ...shipRecord,
             orbit_tags: [], // Default empty array since it's not in database
-            orbit_radius: ship.orbit_radius || 0,
-            inclination: ship.inclination || 0,
-            phase: ship.phase || 0,
-            angular_speed: ship.angular_speed || 0,
-            roles: ship.roles || [],
+            orbit_radius: shipRecord.orbit_radius || 0,
+            inclination: shipRecord.inclination || 0,
+            phase: shipRecord.phase || 0,
+            angular_speed: shipRecord.angular_speed || 0,
+            roles: shipRecord.roles || [],
           };
           
           // Remove the profiles property from ship object
-          delete (transformedShip as any).profiles;
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore – we casted above; profiles will be reattached below
+          delete (transformedShip as unknown as { profiles?: unknown }).profiles;
           
           return {
             ...transformedShip,

@@ -24,7 +24,7 @@ function HomeContent() {
   // Removed Hangar feature – redeploy via Hangar no longer supported
   const [showVoyagers, setShowVoyagers] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [initialWizardData, setInitialWizardData] = useState<Ship | null>(null);
+  const [initialWizardData] = useState<Ship | null>(null);
 
   // Welcome message handling
   useEffect(() => {

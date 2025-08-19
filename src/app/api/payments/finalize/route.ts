@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('🔍 Parsing metadata...');
-    const metadata = payment.metadata as any;
+    const metadata = payment.metadata as { shipData?: string; user_id?: string };
     const shipDataStr = metadata?.shipData;
     const user_id = metadata?.user_id;
     if (!shipDataStr || !user_id) {
