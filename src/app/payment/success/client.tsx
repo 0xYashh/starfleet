@@ -1,8 +1,8 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function PaymentSuccessClient() {
+function PaymentSuccessInner() {
   const params = useSearchParams();
   const router = useRouter();
   const paymentId = params.get('payment_id');
@@ -35,4 +35,12 @@ export default function PaymentSuccessClient() {
   }, [paymentId, router]);
 
   return null;
+}
+
+export default function PaymentSuccessClient() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentSuccessInner />
+    </Suspense>
+  );
 }
