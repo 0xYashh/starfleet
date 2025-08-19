@@ -45,9 +45,8 @@ export async function POST(req: NextRequest) {
       ],
       return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
       // Minimal placeholder billing – required by Dodo
-      // @ts-ignore  Dodo SDK types are outdated; address is accepted at runtime
       billing: {
-        // @ts-ignore  address field accepted by API though not in types
+        // @ts-expect-error  address field accepted by API though not in types
         address: {
           line1: '-',
         },
@@ -61,7 +60,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ payment_link: payment.payment_link });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    // eslint-disable-next-line no-console
     console.error('create-link failed', err);
     return NextResponse.json({ error: 'internal-error', message }, { status: 500 });
   }
