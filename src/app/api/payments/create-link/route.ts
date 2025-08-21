@@ -32,6 +32,12 @@ export async function POST(req: NextRequest) {
     // ────────────────────────────────────────────────────────────
     // Build the payment request
     // ────────────────────────────────────────────────────────────
+    console.log('🚀 Creating DodoPayments payment with data:', {
+      customer: { email: customer.email, name: customer.name ?? 'Pilot' },
+      product_id: PAID_SPACESHIP_PRODUCT_ID,
+      return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`
+    });
+
     const payment = await dodoPayments.payments.create({
       customer: {
         email: customer.email,
@@ -58,6 +64,14 @@ export async function POST(req: NextRequest) {
       },
     }) as unknown as { payment_link: string };
 
+    console.log('✅ DodoPayments response:', payment);
+    
+    if (!payment.payment_link) {
+      console.error('❌ No payment_link in response:', payment);
+      return NextResponse.json({ error: 'no-payment-link-returned' }, { status: 500 });
+    }
+
+    console.log('🎯 Returning payment link:', payment.payment_link);
     return NextResponse.json({ payment_link: payment.payment_link });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
