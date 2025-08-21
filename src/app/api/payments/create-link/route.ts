@@ -44,12 +44,13 @@ export async function POST(req: NextRequest) {
         },
       ],
       return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
-      // Minimal placeholder billing – required by Dodo
+      // Minimal required billing info - DodoPayments will collect real address during checkout
       billing: {
-        // @ts-expect-error  address field accepted by API though not in types
-        address: {
-          line1: '-',
-        },
+        city: '-',
+        country: 'US' as const,
+        state: '-',
+        street: '-',
+        zipcode: '-',
       },
       metadata: {
         shipData: JSON.stringify(shipData),
